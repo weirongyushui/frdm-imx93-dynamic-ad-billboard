@@ -1,0 +1,4277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告牌编辑系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #2d3436 0%, #1e272e 100%);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #34495e;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .project-name-input {
+            padding: 6px 12px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            width: 160px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .project-name-input:focus {
+            border-color: #6c5ce7;
+        }
+
+        .project-name-input::placeholder {
+            color: #555;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-secondary {
+            background: #34495e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a6785;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar-left {
+            width: 220px;
+            background: #1e272e;
+            border-right: 1px solid #34495e;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-title {
+            padding: 12px 15px;
+            color: #bdc3c7;
+            font-size: 14px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-title-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .sidebar-add-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background: #2d3436;
+            color: #bdc3c7;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .sidebar-add-btn:hover {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: white;
+        }
+
+        .page-tabs {
+            padding: 8px 10px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .page-tab {
+            padding: 4px 10px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            color: #bdc3c7;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .page-tab:hover {
+            border-color: #6c5ce7;
+            color: white;
+        }
+
+        .page-tab.active {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+            color: white;
+        }
+
+        .page-tab-add {
+            width: 24px;
+            height: 24px;
+            border: 1px dashed #34495e;
+            border-radius: 4px;
+            background: transparent;
+            color: #7f8c8d;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .page-tab-add:hover {
+            border-color: #6c5ce7;
+            color: #6c5ce7;
+            background: rgba(108,92,231,0.1);
+        }
+
+        .page-tab-del {
+            margin-left: 2px;
+            color: #7f8c8d;
+            cursor: pointer;
+            font-size: 10px;
+            transition: color 0.15s;
+        }
+
+        .page-tab-del:hover {
+            color: #e74c3c;
+        }
+
+        .layers-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 5px;
+            background: #2d3436;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .layer-item:hover {
+            background: #34495e;
+        }
+
+        .layer-item.selected {
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.2);
+        }
+
+        .layer-item-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .layer-item:hover .layer-item-actions,
+        .layer-item.selected .layer-item-actions {
+            opacity: 1;
+        }
+
+        .layer-item.dragging {
+            opacity: 0.4;
+            background: #1e272e;
+            cursor: grabbing;
+        }
+
+        .layer-item.drag-over-top {
+            border-top: 3px solid #6c5ce7;
+        }
+
+        .layer-item.drag-over-bottom {
+            border-bottom: 3px solid #6c5ce7;
+        }
+
+        #layersList {
+            min-height: 80px;
+        }
+
+        .drag-cursor-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            background: rgba(108, 92, 231, 0.92);
+            color: #fff;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.12);
+            transform: translate(-8px, -50%);
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .drag-cursor-ghost .ghost-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.35);
+        }
+
+        .drag-drop-line {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99998;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #a29bfe, transparent);
+            box-shadow: 0 0 8px #6c5ce7;
+        }
+
+        .layer-action-btn {
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #bdc3c7;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .layer-action-btn:hover {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        .layer-action-btn.danger:hover {
+            background: #e74c3c;
+        }
+
+        .layer-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .layer-icon.text {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .layer-icon.image {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+
+        .layer-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .layer-name {
+            color: white;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .layer-type {
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+
+        .sidebar-footer {
+            padding: 10px;
+            border-top: 1px solid #34495e;
+            display: flex;
+            gap: 8px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: radial-gradient(circle at center, #2d3436 0%, #1e272e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-area {
+            width: 800px;
+            height: 450px;
+            background: #1a1a1a;
+            border: 2px dashed #34495e;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform-origin: center center;
+        }
+
+        .canvas-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .ad-layer {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transition: box-shadow 0.3s ease;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .ad-layer img {
+            display: block;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+        .ad-layer:hover, .ad-layer.selected {
+            z-index: 100;
+        }
+
+        .ad-layer.selected::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border: 1px solid #6c5ce7;
+            outline: 1px solid #fff;
+            outline-offset: -2px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .layer-resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border: 1.5px solid #6c5ce7;
+            border-radius: 2px;
+            cursor: nwse-resize;
+            z-index: 20;
+            box-sizing: border-box;
+        }
+
+        .layer-resize-handle.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
+        .layer-resize-handle.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
+        .layer-resize-handle.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
+        .layer-resize-handle.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+
+        .text-layer {
+            padding: 15px 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #34495e;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .image-upload-area:hover {
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .image-upload-icon {
+            font-size: 48px;
+            color: #6c5ce7;
+            margin-bottom: 10px;
+        }
+
+        .image-upload-text {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .sidebar-right {
+            width: 280px;
+            background: #1e272e;
+            border-left: 1px solid #34495e;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid #34495e;
+        }
+
+        .panel-title {
+            color: #bdc3c7;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .panel-title:hover {
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: #6c5ce7;
+            border-radius: 2px;
+        }
+
+        .panel-arrow {
+            margin-left: auto;
+            font-size: 10px;
+            transition: transform 0.3s ease;
+            color: #7f8c8d;
+        }
+
+        .panel-section.open .panel-arrow {
+            transform: rotate(180deg);
+        }
+
+        .panel-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            padding: 0 15px;
+        }
+
+        .panel-section.open .panel-body {
+            max-height: 500px;
+            padding: 0 15px 15px 15px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: block;
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-row input[type="number"] {
+            width: 58px;
+            padding: 4px 6px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+        }
+
+        .slider-row input[type="number"]:focus {
+            border-color: #6c5ce7;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #bdc3c7;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #6c5ce7;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #34495e;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 14px;
+            height: 14px;
+            background: #6c5ce7;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px 10px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: #6c5ce7;
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 36px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-preview {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            border: 1px solid #34495e;
+            cursor: pointer;
+        }
+
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .effect-btn {
+            padding: 12px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            color: #bdc3c7;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .effect-btn:hover {
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .effect-btn.active {
+            border-color: #6c5ce7;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.3) 0%, rgba(162, 155, 254, 0.3) 100%);
+        }
+
+        .effect-icon {
+            font-size: 20px;
+        }
+
+        .footer-info {
+            position: absolute;
+            bottom: 20px;
+            right: 300px;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .canvas-overlay-text {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #7f8c8d;
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .canvas-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .canvas-title h1 {
+            font-size: 32px;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(108, 92, 231, 0.5);
+        }
+
+        .canvas-title p {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        .preview-watermark {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #6c5ce7;
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            color: #bdc3c7;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .btn-logout {
+            padding: 6px 14px;
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            background: transparent;
+            color: #e74c3c;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-vault {
+            padding: 6px 14px;
+            border: 1px solid #6c5ce7;
+            border-radius: 6px;
+            background: transparent;
+            color: #6c5ce7;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-vault:hover {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .toast.error {
+            background: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .toast.show { opacity: 1; }
+
+        .canvas-size-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+            padding-left: 12px;
+            border-left: 1px solid #34495e;
+        }
+
+        .canvas-size-ctrl span.label {
+            color: #7f8c8d;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .canvas-size-ctrl select {
+            padding: 5px 8px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .canvas-size-ctrl select:focus {
+            border-color: #6c5ce7;
+        }
+
+        .canvas-size-inputs {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .canvas-size-inputs input {
+            width: 56px;
+            padding: 5px 6px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+        }
+
+        .canvas-size-inputs input:focus {
+            border-color: #6c5ce7;
+        }
+
+        .canvas-size-inputs span {
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+
+        .canvas-size-ctrl button {
+            padding: 5px 10px;
+            background: #6c5ce7;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .canvas-size-ctrl button:hover {
+            background: #5a4bd1;
+        }
+
+        .ai-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 400px;
+            height: 100vh;
+            background: #1a1a2e;
+            border-left: 1px solid #34495e;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .ai-panel.open {
+            right: 0;
+        }
+
+        .ai-panel-header {
+            padding: 14px 16px;
+            background: #2d3436;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-panel-header .ai-title {
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-panel-header .ai-close {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            color: #bdc3c7;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .ai-panel-header .ai-close:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ai-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .ai-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message.assistant {
+            align-self: flex-start;
+            background: #2d3436;
+            color: #dfe6e9;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #34495e;
+        }
+
+        .ai-message.assistant .ai-thinking {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .ai-message.assistant .ai-thinking span {
+            width: 6px;
+            height: 6px;
+            background: #6c5ce7;
+            border-radius: 50%;
+            animation: aiDot 1.4s infinite ease-in-out both;
+        }
+
+        .ai-message.assistant .ai-thinking span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-message.assistant .ai-thinking span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes aiDot {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .ai-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid #34495e;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .ai-input-area textarea {
+            flex: 1;
+            padding: 10px 12px;
+            background: #2d3436;
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            min-height: 40px;
+            max-height: 100px;
+        }
+
+        .ai-input-area textarea:focus {
+            border-color: #6c5ce7;
+        }
+
+        .ai-input-area textarea::placeholder {
+            color: #555;
+        }
+
+        .ai-input-area .ai-send-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .ai-input-area .ai-send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .ai-input-area .ai-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 6px;
+            padding: 8px 16px;
+            border-top: 1px solid #34495e;
+        }
+
+        .ai-action-btn {
+            flex: 1;
+            padding: 7px 12px;
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            background: #2d3436;
+            color: #bdc3c7;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .ai-action-btn:hover {
+            border-color: #6c5ce7;
+            background: rgba(108,92,231,0.15);
+            color: white;
+        }
+
+        .ai-action-btn.primary {
+            border-color: #6c5ce7;
+            background: rgba(108,92,231,0.2);
+            color: #a29bfe;
+        }
+
+        .ai-action-btn.primary:hover {
+            background: rgba(108,92,231,0.35);
+            color: white;
+        }
+
+        .ai-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .ai-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .camera-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-modal-mask {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+        }
+
+        .camera-modal-body {
+            position: relative;
+            width: 560px;
+            max-width: 95vw;
+            background: #1e272e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+
+        .camera-modal-header {
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #2d3436;
+            border-bottom: 1px solid #34495e;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .camera-modal-header button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            color: #bdc3c7;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .camera-modal-header button:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .camera-preview-wrap {
+            width: 100%;
+            background: #000;
+        }
+
+        .camera-preview-wrap video {
+            width: 100%;
+            display: block;
+        }
+
+        .camera-modal-footer {
+            padding: 12px 18px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            border-top: 1px solid #34495e;
+        }
+
+        .camera-modal-footer button {
+            padding: 8px 20px;
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .camera-modal-footer button:first-child {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            border-color: #6c5ce7;
+            color: white;
+        }
+
+        .camera-modal-footer button:first-child:hover {
+            filter: brightness(1.1);
+        }
+
+        .camera-modal-footer button:last-child {
+            background: transparent;
+            color: #bdc3c7;
+        }
+
+        .camera-modal-footer button:last-child:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">📢</div>
+            <span>广告牌编辑系统</span>
+        </div>
+        <input type="text" class="project-name-input" id="projectNameInput" placeholder="未命名项目">
+        <button class="toolbar-btn btn-secondary" onclick="window.location.href='/editor'" title="新建项目">
+            <span>➕</span> 新建
+        </button>
+        <div class="toolbar">
+            <button class="toolbar-btn btn-secondary" onclick="addTextLayer()">
+                <span>📝</span> 添加文字
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="addImageLayer()">
+                <span>🖼️</span> 添加图片
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="copyLayer()">
+                <span>📋</span> 复制
+            </button>
+            <button class="toolbar-btn btn-danger" onclick="deleteLayer()">
+                <span>🗑️</span> 删除
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="bringToFront()">
+                <span>⬆️</span> 置顶
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="sendToBack()">
+                <span>⬇️</span> 置底
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="changeBackground()">
+                <span>🎨</span> 背景
+            </button>
+            <button class="toolbar-btn btn-primary" onclick="saveToServer()">
+                <span>💾</span> 保存
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="exportConfig()">
+                <span>📤</span> 导出
+            </button>
+            <button class="toolbar-btn btn-secondary" onclick="previewAd()">
+                <span>👁️</span> 预览
+            </button>
+            <button class="toolbar-btn btn-active" onclick="toggleAiPanel()">
+                <span>🤖</span> AI助手
+            </button>
+            <div class="canvas-size-ctrl">
+                <span class="label">画布尺寸</span>
+                <select id="canvasSizePreset" onchange="onCanvasPresetChange()">
+                    <option value="800x450" selected>横版大图 800×450</option>
+                    <option value="600x600">方形 600×600</option>
+                    <option value="450x800">竖版 450×800</option>
+                    <option value="1200x400">宽横幅 1200×400</option>
+                    <option value="custom">自定义</option>
+                </select>
+                <div class="canvas-size-inputs" id="canvasSizeInputs" style="display:none;">
+                    <input type="number" id="canvasWidth" value="800" min="200" max="2000" onchange="applyCanvasSize()">
+                    <span>x</span>
+                    <input type="number" id="canvasHeight" value="450" min="100" max="2000" onchange="applyCanvasSize()">
+                    <button onclick="applyCanvasSize()">应用</button>
+                </div>
+            </div>
+        </div>
+        <div class="user-area">
+            <a class="btn-vault" href="/vault">👤 个人中心</a>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userNickname">用户</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar-left">
+            <div class="sidebar-title">
+                <span>图层管理</span>
+                <div class="sidebar-title-actions">
+                    <button class="sidebar-add-btn" title="添加文字" onclick="addTextLayer(); event.stopPropagation();">T+</button>
+                    <button class="sidebar-add-btn" title="添加图片" onclick="addImageLayer(); event.stopPropagation();">🖼+</button>
+                </div>
+            </div>
+            <div class="page-tabs" id="pageTabs">
+                <button class="page-tab active" data-page-id="">第1页</button>
+                <button class="page-tab-add" title="新建页面" onclick="addPage()">+</button>
+            </div>
+            <div class="layers-list" id="layersList"></div>
+            <div class="sidebar-footer">
+                <button class="toolbar-btn btn-secondary" style="flex: 1;" onclick="addTextLayer()">
+                    <span>📝</span> 添加文字
+                </button>
+                <button class="toolbar-btn btn-secondary" style="flex: 1;" onclick="addImageLayer()">
+                    <span>🖼️</span> 添加图片
+                </button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-area" id="canvasArea">
+                <div class="canvas-title">
+                    <h1>✨ 欢迎使用广告牌编辑系统</h1>
+                    <p>点击图层开始编辑 · 支持拖拽、缩放、特效</p>
+                </div>
+                
+                <div class="ad-layer text-layer" style="left: 350px; top: 80px; width: 126px; height: 70px;" data-layer-id="1">
+                    <div class="layer-resize-handle top-left"></div>
+                    <div class="layer-resize-handle top-right"></div>
+                    <div class="layer-resize-handle bottom-left"></div>
+                    <div class="layer-resize-handle bottom-right"></div>
+                    文字内容
+                </div>
+
+                <div class="ad-layer" style="left: 270px; top: 180px; width: 260px; height: 40px;" data-layer-id="2">
+                    <div class="layer-resize-handle top-left"></div>
+                    <div class="layer-resize-handle top-right"></div>
+                    <div class="layer-resize-handle bottom-left"></div>
+                    <div class="layer-resize-handle bottom-right"></div>
+                    <div class="image-upload-area" style="width: 100%; height: 100%;">
+                        <div class="image-upload-icon">📷</div>
+                        <div class="image-upload-text">点击上传图片</div>
+                    </div>
+                </div>
+
+                <div class="ad-layer text-layer" style="left: 270px; top: 240px; width: 260px; height: 40px;" data-layer-id="3">
+                    <div class="layer-resize-handle top-left"></div>
+                    <div class="layer-resize-handle top-right"></div>
+                    <div class="layer-resize-handle bottom-left"></div>
+                    <div class="layer-resize-handle bottom-right"></div>
+                    副标题内容
+                </div>
+
+                <div class="ad-layer" style="left: 270px; top: 300px; width: 260px; height: 120px;" data-layer-id="4">
+                    <div class="layer-resize-handle top-left"></div>
+                    <div class="layer-resize-handle top-right"></div>
+                    <div class="layer-resize-handle bottom-left"></div>
+                    <div class="layer-resize-handle bottom-right"></div>
+                    <div class="image-upload-area" style="width: 100%; height: 100%;">
+                        <div class="image-upload-icon">🖼️</div>
+                        <div class="image-upload-text">点击上传图片</div>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas-overlay-text">点击图层开始编辑 · 支持拖拽、缩放、特效</div>
+        </div>
+
+        <div class="sidebar-right" id="sidebarRight">
+            <div class="panel-section open">
+                <div class="panel-title" data-panel="effects">
+                    特效属性
+                    <span class="panel-arrow">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableEffects">
+                            <span>启用</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">圆角</label>
+                        <div class="slider-row">
+                            <input type="range" id="borderRadius" min="0" max="50" value="0">
+                            <input type="number" id="borderRadiusNum" min="0" max="50" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableBorder">
+                            <span>边框</span>
+                        </label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">边框宽度</label>
+                            <div class="slider-row">
+                                <input type="range" id="borderWidth" min="0" max="20" value="1">
+                                <input type="number" id="borderWidthNum" min="0" max="20" value="1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">边框颜色</label>
+                            <div class="color-preview" id="borderColor" style="background: #6c5ce7;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title" data-panel="filter">
+                    滤镜
+                    <span class="panel-arrow">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="form-label">亮度</label>
+                        <div class="slider-row">
+                            <input type="range" id="brightness" min="0" max="200" value="100">
+                            <input type="number" id="brightnessNum" min="0" max="200" value="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">对比度</label>
+                        <div class="slider-row">
+                            <input type="range" id="contrast" min="0" max="200" value="100">
+                            <input type="number" id="contrastNum" min="0" max="200" value="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">饱和度</label>
+                        <div class="slider-row">
+                            <input type="range" id="saturation" min="0" max="200" value="100">
+                            <input type="number" id="saturationNum" min="0" max="200" value="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">模糊度</label>
+                        <div class="slider-row">
+                            <input type="range" id="blur" min="0" max="20" value="0">
+                            <input type="number" id="blurNum" min="0" max="20" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title" data-panel="3d">
+                    3D透视
+                    <span class="panel-arrow">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enable3d">
+                            <span>启用</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">3D X轴</label>
+                        <div class="slider-row">
+                            <input type="range" id="perspectiveX" min="-100" max="100" value="0">
+                            <input type="number" id="perspectiveXNum" min="-100" max="100" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">3D Y轴</label>
+                        <div class="slider-row">
+                            <input type="range" id="perspectiveY" min="-100" max="100" value="0">
+                            <input type="number" id="perspectiveYNum" min="-100" max="100" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title" data-panel="text">
+                    文字属性
+                    <span class="panel-arrow">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="form-label">字号</label>
+                        <div class="slider-row">
+                            <input type="range" id="fontSize" min="12" max="72" value="24">
+                            <input type="number" id="fontSizeNum" min="12" max="72" value="24">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">颜色</label>
+                        <div class="color-preview" id="fontColor" style="background: #ffffff;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">字体</label>
+                        <select id="fontFamily">
+                            <option value="Microsoft YaHei" selected>微软雅黑</option>
+                            <option value="SimSun">宋体</option>
+                            <option value="SimHei">黑体</option>
+                            <option value="KaiTi">楷体</option>
+                            <option value="FangSong">仿宋</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Roboto">Roboto</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">粗体</label>
+                            <select id="fontWeight">
+                                <option value="normal">正常</option>
+                                <option value="bold" selected>粗体</option>
+                                <option value="900">特粗</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对齐</label>
+                            <select id="textAlign">
+                                <option value="left">左对齐</option>
+                                <option value="center" selected>居中</option>
+                                <option value="right">右对齐</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="fontStyleCheck">
+                                <span>斜体</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="textDecorationCheck">
+                                <span>下划线</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">行高</label>
+                        <div class="slider-row">
+                            <input type="range" id="lineHeight" min="1.0" max="2.5" step="0.1" value="1.5">
+                            <input type="number" id="lineHeightNum" min="1.0" max="2.5" step="0.1" value="1.5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">字间距</label>
+                        <div class="slider-row">
+                            <input type="range" id="letterSpacing" min="0" max="20" step="0.5" value="0">
+                            <input type="number" id="letterSpacingNum" min="0" max="20" step="0.5" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">透明度</label>
+                        <div class="slider-row">
+                            <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="1">
+                            <input type="number" id="opacityNum" min="0" max="1" step="0.05" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title" data-panel="preset">
+                    预设特效
+                    <span class="panel-arrow">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="effects-grid">
+                        <button class="effect-btn" onclick="applyEffect('glow')">
+                            <span class="effect-icon">✨</span>
+                            <span>发光特效</span>
+                        </button>
+                        <button class="effect-btn" onclick="applyEffect('shadow')">
+                            <span class="effect-icon">🌑</span>
+                            <span>阴影特效</span>
+                        </button>
+                        <button class="effect-btn" onclick="applyEffect('gradient')">
+                            <span class="effect-icon">🌈</span>
+                            <span>立体3D</span>
+                        </button>
+                        <button class="effect-btn" onclick="applyEffect('glass')">
+                            <span class="effect-icon">🔮</span>
+                            <span>玻璃质感</span>
+                        </button>
+                        <button class="effect-btn" onclick="applyEffect('neon')">
+                            <span class="effect-icon">💡</span>
+                            <span>霓虹灯光</span>
+                        </button>
+                        <button class="effect-btn" onclick="applyEffect('emboss')">
+                            <span class="effect-icon">🔲</span>
+                            <span>浮雕效果</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLayerId = 1;
+        let canvasScale = 1;
+        let _dragState = null;
+
+        function fitCanvasToContainer() {
+            var canvas = document.getElementById('canvasArea');
+            var container = canvas.parentElement;
+            var containerW = container.clientWidth;
+            var containerH = container.clientHeight;
+            var canvasW = parseInt(canvas.style.width) || canvas.clientWidth;
+            var canvasH = parseInt(canvas.style.height) || canvas.clientHeight;
+            canvasScale = Math.min(1, containerW / canvasW, containerH / canvasH);
+
+            var visualW = canvasW * canvasScale;
+            var visualH = canvasH * canvasScale;
+
+            canvas.style.transform = 'scale(' + canvasScale + ')';
+            canvas.style.transformOrigin = 'top left';
+            canvas.style.position = 'absolute';
+            canvas.style.left = ((containerW - visualW) / 2) + 'px';
+            canvas.style.top = ((containerH - visualH) / 2) + 'px';
+        }
+
+        function getLayerEl(id) {
+            return document.querySelector('.ad-layer[data-layer-id="' + id + '"]');
+        }
+
+        function getLayerItemEl(id) {
+            return document.querySelector('.layer-item[data-layer-id="' + id + '"]');
+        }
+
+        async function logout() {
+            try {
+                const res = await fetch('/api/auth/logout');
+                const data = await res.json();
+                if (data.success) window.location.href = '/login';
+            } catch (e) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const res = await fetch('/api/auth/current');
+                const data = await res.json();
+                if (data.success && data.user) {
+                    var nickname = data.user.nickname || data.user.username;
+                    document.getElementById('userNickname').textContent = nickname;
+                    document.getElementById('userAvatar').textContent = nickname.charAt(0).toUpperCase();
+                }
+            } catch (e) {}
+        }
+
+        loadCurrentUser();
+
+        function selectLayer(layerId) {
+            selectedLayerId = layerId;
+
+            document.querySelectorAll('.layer-item').forEach(function(item) {
+                item.classList.remove('selected');
+            });
+            var itemEl = getLayerItemEl(layerId);
+            if (itemEl) itemEl.classList.add('selected');
+
+            document.querySelectorAll('.ad-layer').forEach(function(layer) {
+                layer.classList.remove('selected');
+            });
+            var layerEl = getLayerEl(layerId);
+            if (layerEl) layerEl.classList.add('selected');
+
+            syncPanelFromLayer(layerEl);
+        }
+
+        function syncPanelFromLayer(layer) {
+            if (!layer) return;
+            var isText = layer.classList.contains('text-layer');
+
+            var fontSize = parseInt(layer.style.fontSize) || 24;
+            document.getElementById('fontSize').value = fontSize;
+            document.getElementById('fontSizeNum').value = fontSize;
+
+            document.getElementById('fontColor').style.background = layer.style.color || '#ffffff';
+
+            var ff = layer.style.fontFamily || 'Microsoft YaHei';
+            var ffSel = document.getElementById('fontFamily');
+            for (var i = 0; i < ffSel.options.length; i++) {
+                if (ffSel.options[i].value === ff || ffSel.options[i].value === ff.replace(/['"]/g, '')) {
+                    ffSel.selectedIndex = i;
+                    break;
+                }
+            }
+
+            document.getElementById('fontWeight').value = layer.style.fontWeight || 'bold';
+            document.getElementById('textAlign').value = layer.style.textAlign || 'center';
+
+            document.getElementById('fontStyleCheck').checked = (layer.style.fontStyle || 'normal') === 'italic';
+            document.getElementById('textDecorationCheck').checked = (layer.style.textDecoration || 'none') !== 'none';
+
+            var lh = parseFloat(layer.style.lineHeight) || 1.5;
+            document.getElementById('lineHeight').value = lh;
+            document.getElementById('lineHeightNum').value = lh;
+
+            var ls = parseFloat(layer.style.letterSpacing) || 0;
+            document.getElementById('letterSpacing').value = ls;
+            document.getElementById('letterSpacingNum').value = ls;
+
+            var op = parseFloat(layer.style.opacity);
+            op = isNaN(op) ? 1.0 : op;
+            document.getElementById('opacitySlider').value = op;
+            document.getElementById('opacityNum').value = op;
+
+            var br = parseInt(layer.style.borderRadius) || 0;
+            document.getElementById('borderRadius').value = br;
+            document.getElementById('borderRadiusNum').value = br;
+
+            var filterStr = layer.style.filter || '';
+            var bMatch = filterStr.match(/brightness\((\d+)%?\)/);
+            var cMatch = filterStr.match(/contrast\((\d+)%?\)/);
+            var sMatch = filterStr.match(/saturate\((\d+)%?\)/);
+            var blMatch = filterStr.match(/blur\((\d+)px\)/);
+
+            var bVal = bMatch ? parseInt(bMatch[1]) : 100;
+            document.getElementById('brightness').value = bVal;
+            document.getElementById('brightnessNum').value = bVal;
+
+            var cVal = cMatch ? parseInt(cMatch[1]) : 100;
+            document.getElementById('contrast').value = cVal;
+            document.getElementById('contrastNum').value = cVal;
+
+            var sVal = sMatch ? parseInt(sMatch[1]) : 100;
+            document.getElementById('saturation').value = sVal;
+            document.getElementById('saturationNum').value = sVal;
+
+            var blVal = blMatch ? parseInt(blMatch[1]) : 0;
+            document.getElementById('blur').value = blVal;
+            document.getElementById('blurNum').value = blVal;
+
+            var transform = layer.style.transform || '';
+            var pxMatch = transform.match(/rotateX\((-?\d+)deg\)/);
+            var pyMatch = transform.match(/rotateY\((-?\d+)deg\)/);
+            var pxVal = pxMatch ? parseInt(pxMatch[1]) : 0;
+            var pyVal = pyMatch ? parseInt(pyMatch[1]) : 0;
+            document.getElementById('perspectiveX').value = pxVal;
+            document.getElementById('perspectiveXNum').value = pxVal;
+            document.getElementById('perspectiveY').value = pyVal;
+            document.getElementById('perspectiveYNum').value = pyVal;
+            document.getElementById('enable3d').checked = !!(pxMatch || pyMatch);
+
+            var borderStyle = layer.style.border;
+            document.getElementById('enableBorder').checked = !!borderStyle && borderStyle !== 'none';
+
+            document.getElementById('enableEffects').checked = !!(layer.style.boxShadow || layer.style.textShadow || layer.style.backdropFilter);
+        }
+
+        function bindLayerEvents(layer) {
+            layer.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectLayer(layer.dataset.layerId);
+            });
+
+            if (layer.classList.contains('text-layer')) {
+                layer.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    startTextEdit(layer);
+                });
+            }
+
+            bindDrag(layer);
+            bindResize(layer);
+        }
+
+        function startTextEdit(layer) {
+            var span = layer.querySelector('.text-content');
+            if (!span) {
+                span = document.createElement('span');
+                span.className = 'text-content';
+                span.style.cssText = 'display:block;outline:none;';
+                var handles = layer.querySelectorAll('.layer-resize-handle');
+                var textNodes = [];
+                layer.childNodes.forEach(function(node) {
+                    if (!node.classList || !node.classList.contains('layer-resize-handle')) {
+                        textNodes.push(node);
+                    }
+                });
+                textNodes.forEach(function(node) { span.appendChild(node); });
+                layer.appendChild(span);
+            }
+
+            if (span.isContentEditable) return;
+            span.contentEditable = 'true';
+            span.focus();
+
+            var range = document.createRange();
+            range.selectNodeContents(span);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            function finish() {
+                span.contentEditable = 'false';
+                span.removeEventListener('blur', finish);
+                span.removeEventListener('keydown', onKeyDown);
+                var text = span.textContent.replace(/\s+/g, ' ').trim();
+                if (!text) text = '双击编辑文字';
+                span.textContent = text;
+            }
+
+            function onKeyDown(e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    finish();
+                }
+            }
+
+            span.addEventListener('blur', finish);
+            span.addEventListener('keydown', onKeyDown);
+        }
+
+        function bindDrag(layer) {
+            var isDragging = false;
+            var startX, startY, layerX, layerY;
+
+            layer.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('layer-resize-handle')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                var rect = layer.getBoundingClientRect();
+                var canvasRect = document.getElementById('canvasArea').getBoundingClientRect();
+                layerX = (rect.left - canvasRect.left) / canvasScale;
+                layerY = (rect.top - canvasRect.top) / canvasScale;
+                e.preventDefault();
+
+                var dragMoved = false;
+
+                function onMouseMove(e) {
+                    if (!isDragging) return;
+                    dragMoved = true;
+                    var canvasRect = document.getElementById('canvasArea').getBoundingClientRect();
+                    var dx = (e.clientX - startX) / canvasScale;
+                    var dy = (e.clientY - startY) / canvasScale;
+                    var logicalW = canvasRect.width / canvasScale;
+                    var logicalH = canvasRect.height / canvasScale;
+                    var newX = Math.max(0, Math.min(layerX + dx, logicalW - layer.offsetWidth));
+                    var newY = Math.max(0, Math.min(layerY + dy, logicalH - layer.offsetHeight));
+                    layer.style.left = newX + 'px';
+                    layer.style.top = newY + 'px';
+                }
+
+                function onMouseUp() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    if (dragMoved) {
+                        var upload = layer.querySelector('.image-upload-area');
+                        if (upload) {
+                            var block = function(ev) {
+                                ev.stopPropagation();
+                                upload.removeEventListener('click', block, true);
+                            };
+                            upload.addEventListener('click', block, true);
+                        }
+                    }
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        }
+
+        function bindResize(layer) {
+            var handles = layer.querySelectorAll('.layer-resize-handle');
+            var isImageLayer = !!layer.querySelector('img');
+            var aspectRatio = 1;
+            if (isImageLayer) {
+                var img = layer.querySelector('img');
+                if (img && img.naturalWidth && img.naturalHeight) {
+                    aspectRatio = img.naturalWidth / img.naturalHeight;
+                } else {
+                    aspectRatio = layer.offsetWidth / layer.offsetHeight;
+                }
+            }
+
+            handles.forEach(function(handle) {
+                handle.addEventListener('mousedown', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    var isDragging = true;
+                    var startX = e.clientX;
+                    var startY = e.clientY;
+                    var startW = layer.offsetWidth;
+                    var startH = layer.offsetHeight;
+                    var startLeft = parseInt(layer.style.left) || 0;
+                    var startTop = parseInt(layer.style.top) || 0;
+                    var dirX = handle.classList.contains('top-right') || handle.classList.contains('bottom-right') ? 1 :
+                               handle.classList.contains('top-left') || handle.classList.contains('bottom-left') ? -1 : 0;
+                    var dirY = handle.classList.contains('bottom-left') || handle.classList.contains('bottom-right') ? 1 :
+                               handle.classList.contains('top-left') || handle.classList.contains('top-right') ? -1 : 0;
+
+                    if (isImageLayer) {
+                        var img = layer.querySelector('img');
+                        if (img && img.naturalWidth && img.naturalHeight) {
+                            aspectRatio = img.naturalWidth / img.naturalHeight;
+                        } else {
+                            aspectRatio = startW / startH;
+                        }
+                    }
+
+                    function onMouseMove(e) {
+                        if (!isDragging) return;
+                        var dx = (e.clientX - startX) / canvasScale;
+                        var dy = (e.clientY - startY) / canvasScale;
+                        var newW = Math.max(30, startW + dx * dirX);
+                        var newH = Math.max(20, startH + dy * dirY);
+
+                        if (isImageLayer && e.shiftKey) {
+                            if (Math.abs(dx) > Math.abs(dy)) {
+                                newH = Math.max(20, newW / aspectRatio);
+                            } else {
+                                newW = Math.max(30, newH * aspectRatio);
+                            }
+                        }
+                        if (dirX === -1) layer.style.left = (startLeft + startW - newW) + 'px';
+                        if (dirY === -1) layer.style.top = (startTop + startH - newH) + 'px';
+                        layer.style.width = newW + 'px';
+                        layer.style.height = newH + 'px';
+                    }
+
+                    function onMouseUp() {
+                        isDragging = false;
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+        }
+
+        function reindexLayers() {
+            var canvasArea = document.getElementById('canvasArea');
+            var items = document.querySelectorAll('#layersList .layer-item');
+            var z = 1;
+            items.forEach(function(item) {
+                var id = item.dataset.layerId;
+                var layer = canvasArea.querySelector('.ad-layer[data-layer-id="' + id + '"]');
+                if (layer) layer.style.zIndex = z++;
+            });
+        }
+
+        function clearDragOverAll() {
+            document.querySelectorAll('.layer-item').forEach(function(item) {
+                item.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+        }
+
+        function clearDragHelpers() {
+            var g = document.querySelector('.drag-cursor-ghost');
+            if (g) g.remove();
+            var l = document.querySelector('.drag-drop-line');
+            if (l) l.remove();
+        }
+
+        function onLayerDragStart(e, layerId) {
+            if (e.button !== 0) return;
+            if (e.target.closest('.layer-action-btn')) return;
+            var src = document.querySelector('.layer-item[data-layer-id="' + layerId + '"]');
+            var srcName = '';
+            if (src) {
+                var nameEl = src.querySelector('.layer-name');
+                srcName = nameEl ? nameEl.textContent.trim() : '图层';
+            }
+            _dragState = {
+                layerId: layerId,
+                startX: e.clientX,
+                startY: e.clientY,
+                dragging: false,
+                moved: false,
+                srcName: srcName
+            };
+
+            var ensureGhost = function(x, y) {
+                var g = document.querySelector('.drag-cursor-ghost');
+                if (!g) {
+                    g = document.createElement('div');
+                    g.className = 'drag-cursor-ghost';
+                    g.innerHTML = '<span class="ghost-indicator"></span><span class="ghost-label">' + escapeHtml(_dragState.srcName || '图层') + '</span>';
+                    document.body.appendChild(g);
+                }
+                g.style.left = (x + 14) + 'px';
+                g.style.top = y + 'px';
+                return g;
+            };
+
+            var placeDropLine = function(y) {
+                var items = document.querySelectorAll('#layersList .layer-item');
+                var listEl = document.getElementById('layersList');
+                if (!listEl) return;
+                var listRect = listEl.getBoundingClientRect();
+                var left = listRect.left;
+                var right = listRect.right;
+                var line = document.querySelector('.drag-drop-line');
+                if (!line) {
+                    line = document.createElement('div');
+                    line.className = 'drag-drop-line';
+                    document.body.appendChild(line);
+                }
+                line.style.left = left + 'px';
+                line.style.right = (window.innerWidth - right) + 'px';
+                line.style.top = y + 'px';
+                line.style.display = (y >= listRect.top - 4 && y <= listRect.bottom + 4) ? 'block' : 'none';
+            };
+
+            var onMove = function(ev) {
+                if (!_dragState) return;
+                var dx = ev.clientX - _dragState.startX;
+                var dy = ev.clientY - _dragState.startY;
+                if (!_dragState.dragging && Math.sqrt(dx * dx + dy * dy) < 8) return;
+                _dragState.dragging = true;
+                _dragState.moved = true;
+                var s = document.querySelector('.layer-item[data-layer-id="' + _dragState.layerId + '"]');
+                if (s) s.classList.add('dragging');
+
+                ensureGhost(ev.clientX, ev.clientY);
+
+                clearDragOverAll();
+                var dropY = null;
+                var items = document.querySelectorAll('#layersList .layer-item');
+                items.forEach(function(item) {
+                    if (item.dataset.layerId === _dragState.layerId) return;
+                    var rect = item.getBoundingClientRect();
+                    if (ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+                        var mid = (rect.top + rect.bottom) / 2;
+                        if (ev.clientY < mid) {
+                            item.classList.add('drag-over-top');
+                            dropY = rect.top;
+                        } else {
+                            item.classList.add('drag-over-bottom');
+                            dropY = rect.bottom;
+                        }
+                    }
+                });
+                if (dropY === null) {
+                    var listEl = document.getElementById('layersList');
+                    if (listEl) {
+                        var listRect = listEl.getBoundingClientRect();
+                        if (ev.clientY < listRect.top) dropY = listRect.top;
+                        else if (ev.clientY > listRect.bottom) dropY = listRect.bottom;
+                    }
+                }
+                if (dropY !== null) placeDropLine(dropY);
+                else {
+                    var ll = document.querySelector('.drag-drop-line');
+                    if (ll) ll.style.display = 'none';
+                }
+            };
+            var onUp = function(ev) {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                if (!_dragState) return;
+                var src2 = document.querySelector('.layer-item[data-layer-id="' + _dragState.layerId + '"]');
+                if (src2) src2.classList.remove('dragging');
+
+                if (_dragState.dragging) {
+                    var items = Array.from(document.querySelectorAll('#layersList .layer-item'));
+                    var dropInfo = null;
+                    var dropIdx = -1;
+                    items.forEach(function(item, idx) {
+                        if (item.dataset.layerId === _dragState.layerId) return;
+                        if (item.classList.contains('drag-over-top')) { dropInfo = 'top'; dropIdx = idx; }
+                        if (item.classList.contains('drag-over-bottom')) { dropInfo = 'bottom'; dropIdx = idx; }
+                    });
+
+                    if (dropInfo) {
+                        var list = document.getElementById('layersList');
+                        var srcIdx = items.findIndex(function(it) { return it.dataset.layerId === _dragState.layerId; });
+                        if (srcIdx >= 0 && dropIdx >= 0 && srcIdx !== dropIdx) {
+                            var movingItem = list.removeChild(items[srcIdx]);
+                            var afterIdx = dropIdx;
+                            if (srcIdx < dropIdx) afterIdx = dropIdx - 1;
+                            var refChild = list.children[afterIdx + (dropInfo === 'bottom' ? 1 : 0)] || null;
+                            list.insertBefore(movingItem, refChild);
+                            reindexLayers();
+                            selectLayer(_dragState.layerId);
+                        }
+                    }
+                }
+                clearDragOverAll();
+                clearDragHelpers();
+                _dragState = null;
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        }
+
+        function bindLayerItemEvents(item) {
+            item.addEventListener('mousedown', function(e) {
+                onLayerDragStart(e, item.dataset.layerId);
+            });
+            item.addEventListener('click', function() {
+                if (!_dragState || !_dragState.moved) {
+                    selectLayer(item.dataset.layerId);
+                }
+            });
+        }
+
+        function bindImageUpload(uploadArea) {
+            uploadArea.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function() {
+                    var file = input.files[0];
+                    if (!file) return;
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        var img = new Image();
+                        img.onload = function() {
+                            var layer = uploadArea.closest('.ad-layer');
+                            if (layer) {
+                                var origW = img.naturalWidth;
+                                var origH = img.naturalHeight;
+                                var maxW = 350;
+                                var maxH = 300;
+                                var scale = Math.min(maxW / origW, maxH / origH, 1);
+                                var newW = Math.round(origW * scale);
+                                var newH = Math.round(origH * scale);
+                                layer.style.width = newW + 'px';
+                                layer.style.height = newH + 'px';
+                                uploadArea.outerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;display:block;border-radius:4px;">';
+
+                                var layerId = layer.dataset.layerId;
+                                var itemEl = getLayerItemEl(layerId);
+                                if (itemEl) {
+                                    var typeEl = itemEl.querySelector('.layer-type');
+                                    if (typeEl) typeEl.textContent = '图片图层 · ' + newW + ' x ' + newH;
+                                }
+                            }
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('folder', 'project');
+                    fetch('/api/image/upload', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    }).then(function(res) {
+                        if (!res.ok) throw new Error('上传失败');
+                        return res.json();
+                    }).then(function(data) {
+                        if (data.code === 200 && data.data && data.data.url) {
+                            var layer = uploadArea.closest('.ad-layer');
+                            var img = layer.querySelector('img');
+                            if (img) img.src = data.data.url;
+                            showToast('✅ 图片上传成功');
+                        } else {
+                            showToast('❌ ' + (data.message || '图片上传失败'), true);
+                        }
+                    }).catch(function(err) {
+                        showToast('❌ 图片上传失败: ' + err.message, true);
+                    });
+                };
+                input.click();
+            });
+        }
+
+        function addTextLayer() {
+            var layersList = document.getElementById('layersList');
+            var canvasArea = document.getElementById('canvasArea');
+            var newId = Date.now();
+
+            var layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.dataset.layerId = newId;
+            layerItem.innerHTML =
+                '<div class="layer-icon text">T</div>' +
+                '<div class="layer-info">' +
+                '<div class="layer-name">新文字图层</div>' +
+                '<div class="layer-type">文字图层 · 200 x 50</div>' +
+                '</div>' +
+                '<div class="layer-item-actions">' +
+                '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                '</div>';
+            layersList.appendChild(layerItem);
+            bindLayerItemEvents(layerItem);
+
+            var layer = document.createElement('div');
+            layer.className = 'ad-layer text-layer';
+            layer.dataset.layerId = newId;
+            layer.style.left = '300px';
+            layer.style.top = '200px';
+            layer.style.width = '200px';
+            layer.style.height = '50px';
+            layer.style.fontSize = '24px';
+            layer.style.color = '#ffffff';
+            layer.style.fontWeight = 'bold';
+            layer.style.fontFamily = 'Microsoft YaHei';
+            layer.style.fontStyle = 'normal';
+            layer.style.textDecoration = 'none';
+            layer.style.lineHeight = '1.5';
+            layer.style.letterSpacing = '0px';
+            layer.style.opacity = '1';
+            layer.style.textAlign = 'center';
+            layer.style.borderRadius = '8px';
+            layer.style.background = 'rgba(0, 0, 0, 0.6)';
+            layer.innerHTML =
+                '<div class="layer-resize-handle top-left"></div>' +
+                '<div class="layer-resize-handle top-right"></div>' +
+                '<div class="layer-resize-handle bottom-left"></div>' +
+                '<div class="layer-resize-handle bottom-right"></div>' +
+                '新文字内容';
+            canvasArea.appendChild(layer);
+            bindLayerEvents(layer);
+
+            var titleEl = canvasArea.querySelector('.canvas-title');
+            if (titleEl) titleEl.style.display = 'none';
+
+            selectLayer(newId);
+        }
+
+        function addImageLayer() {
+            var layersList = document.getElementById('layersList');
+            var canvasArea = document.getElementById('canvasArea');
+            var newId = Date.now();
+
+            var layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.dataset.layerId = newId;
+            layerItem.innerHTML =
+                '<div class="layer-icon image">🖼️</div>' +
+                '<div class="layer-info">' +
+                '<div class="layer-name">新图片图层</div>' +
+                '<div class="layer-type">图片图层 · 200 x 150</div>' +
+                '</div>' +
+                '<div class="layer-item-actions">' +
+                '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                '</div>';
+            layersList.appendChild(layerItem);
+            bindLayerItemEvents(layerItem);
+
+            var layer = document.createElement('div');
+            layer.className = 'ad-layer';
+            layer.dataset.layerId = newId;
+            layer.style.left = '300px';
+            layer.style.top = '250px';
+            layer.style.width = '200px';
+            layer.style.height = '150px';
+            layer.innerHTML =
+                '<div class="layer-resize-handle top-left"></div>' +
+                '<div class="layer-resize-handle top-right"></div>' +
+                '<div class="layer-resize-handle bottom-left"></div>' +
+                '<div class="layer-resize-handle bottom-right"></div>' +
+                '<div class="image-upload-area" style="width:100%;height:100%;">' +
+                '<div class="image-upload-icon">🖼️</div>' +
+                '<div class="image-upload-text">点击上传图片</div>' +
+                '</div>';
+            canvasArea.appendChild(layer);
+            bindLayerEvents(layer);
+
+            var titleEl = canvasArea.querySelector('.canvas-title');
+            if (titleEl) titleEl.style.display = 'none';
+
+            var uploadArea = layer.querySelector('.image-upload-area');
+            if (uploadArea) bindImageUpload(uploadArea);
+
+            selectLayer(newId);
+        }
+
+        function deleteLayerById(id) {
+            selectedLayerId = id;
+            deleteLayer();
+        }
+
+        function copyLayerById(id) {
+            selectedLayerId = id;
+            copyLayer();
+        }
+
+        function deleteLayer() {
+            if (!selectedLayerId) return;
+            var itemEl = getLayerItemEl(selectedLayerId);
+            var layerEl = getLayerEl(selectedLayerId);
+            if (itemEl) itemEl.remove();
+            if (layerEl) layerEl.remove();
+            var remaining = document.querySelectorAll('.layer-item');
+            if (remaining.length > 0) {
+                selectLayer(remaining[0].dataset.layerId);
+            } else {
+                selectedLayerId = null;
+                var titleEl = document.querySelector('#canvasArea .canvas-title');
+                if (titleEl) titleEl.style.display = '';
+            }
+        }
+
+        function copyLayer() {
+            var srcLayer = getLayerEl(selectedLayerId);
+            if (!srcLayer) return;
+
+            var layersList = document.getElementById('layersList');
+            var canvasArea = document.getElementById('canvasArea');
+            var newId = Date.now();
+            var isText = srcLayer.classList.contains('text-layer');
+
+            var layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.dataset.layerId = newId;
+            layerItem.innerHTML =
+                '<div class="layer-icon ' + (isText ? 'text' : 'image') + '">' + (isText ? 'T' : '🖼️') + '</div>' +
+                '<div class="layer-info">' +
+                '<div class="layer-name">复制图层</div>' +
+                '<div class="layer-type">' + (isText ? '文字' : '图片') + '图层 · ' + srcLayer.offsetWidth + ' x ' + srcLayer.offsetHeight + '</div>' +
+                '</div>' +
+                '<div class="layer-item-actions">' +
+                '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                '</div>';
+            layersList.appendChild(layerItem);
+            bindLayerItemEvents(layerItem);
+
+            var newLayer = srcLayer.cloneNode(true);
+            newLayer.dataset.layerId = newId;
+            var rect = srcLayer.getBoundingClientRect();
+            var canvasRect = canvasArea.getBoundingClientRect();
+            newLayer.style.left = (rect.left - canvasRect.left + 20) + 'px';
+            newLayer.style.top = (rect.top - canvasRect.top + 20) + 'px';
+            newLayer.classList.remove('selected');
+            canvasArea.appendChild(newLayer);
+            bindLayerEvents(newLayer);
+
+            var titleEl = canvasArea.querySelector('.canvas-title');
+            if (titleEl) titleEl.style.display = 'none';
+
+            selectLayer(newId);
+        }
+
+        function moveLayerItemToFront(selectedId) {
+            var list = document.getElementById('layersList');
+            var item = list.querySelector('.layer-item[data-layer-id="' + selectedId + '"]');
+            if (!item) return;
+            list.appendChild(item);
+            reindexLayers();
+        }
+
+        function moveLayerItemToBack(selectedId) {
+            var list = document.getElementById('layersList');
+            var item = list.querySelector('.layer-item[data-layer-id="' + selectedId + '"]');
+            if (!item) return;
+            list.insertBefore(item, list.firstChild);
+            reindexLayers();
+        }
+
+        function bringToFront() {
+            if (!selectedLayerId) return;
+            moveLayerItemToFront(selectedLayerId);
+        }
+
+        function sendToBack() {
+            if (!selectedLayerId) return;
+            moveLayerItemToBack(selectedLayerId);
+        }
+
+        function changeBackground() {
+            var color = prompt('请输入背景颜色（如 #333333）:', '#1a1a1a');
+            if (color) document.getElementById('canvasArea').style.background = color;
+        }
+
+        function onCanvasPresetChange() {
+            var sel = document.getElementById('canvasSizePreset');
+            var inputs = document.getElementById('canvasSizeInputs');
+            if (sel.value === 'custom') {
+                var curW = parseInt(document.getElementById('canvasArea').style.width) || 800;
+                var curH = parseInt(document.getElementById('canvasArea').style.height) || 450;
+                document.getElementById('canvasWidth').value = curW;
+                document.getElementById('canvasHeight').value = curH;
+                inputs.style.display = 'flex';
+            } else {
+                inputs.style.display = 'none';
+                var parts = sel.value.split('x');
+                setCanvasSize(parseInt(parts[0]), parseInt(parts[1]));
+            }
+        }
+
+        function applyCanvasSize() {
+            var w = parseInt(document.getElementById('canvasWidth').value);
+            var h = parseInt(document.getElementById('canvasHeight').value);
+            if (isNaN(w) || isNaN(h) || w < 200 || h < 100) return;
+            setCanvasSize(w, h);
+        }
+
+        function setCanvasSize(w, h) {
+            var canvas = document.getElementById('canvasArea');
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            fitCanvasToContainer();
+        }
+
+        window.addEventListener('resize', function() {
+            fitCanvasToContainer();
+        });
+
+        window.addEventListener('load', function() {
+            fitCanvasToContainer();
+
+            document.querySelectorAll('.layer-item').forEach(function(item) {
+                bindLayerItemEvents(item);
+            });
+
+            document.querySelectorAll('.ad-layer').forEach(function(layer) {
+                bindLayerEvents(layer);
+                var uploadArea = layer.querySelector('.image-upload-area');
+                if (uploadArea) bindImageUpload(uploadArea);
+            });
+
+            document.getElementById('canvasArea').addEventListener('click', function(e) {
+                if (e.target === this || e.target.classList.contains('canvas-title') ||
+                    e.target.closest('.canvas-title')) {
+                    selectedLayerId = null;
+                    document.querySelectorAll('.layer-item,.ad-layer').forEach(function(el) {
+                        el.classList.remove('selected');
+                    });
+                }
+            });
+
+            document.querySelectorAll('.panel-title').forEach(function(title) {
+                title.addEventListener('click', function() {
+                    var section = this.parentElement;
+                    var wasOpen = section.classList.contains('open');
+                    document.querySelectorAll('.panel-section.open').forEach(function(s) {
+                        s.classList.remove('open');
+                    });
+                    if (!wasOpen) section.classList.add('open');
+                });
+            });
+
+            bindSliderPair('fontSize', 'fontSizeNum', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.fontSize = document.getElementById('fontSize').value + 'px';
+            });
+
+            bindSliderPair('borderRadius', 'borderRadiusNum', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.borderRadius = document.getElementById('borderRadius').value + 'px';
+            });
+
+            document.getElementById('fontFamily').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.fontFamily = this.value;
+            });
+
+            document.getElementById('fontWeight').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.fontWeight = this.value;
+            });
+
+            document.getElementById('textAlign').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.textAlign = this.value;
+            });
+
+            document.getElementById('fontStyleCheck').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.fontStyle = this.checked ? 'italic' : 'normal';
+            });
+
+            document.getElementById('textDecorationCheck').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.textDecoration = this.checked ? 'underline' : 'none';
+            });
+
+            bindSliderPair('lineHeight', 'lineHeightNum', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.lineHeight = document.getElementById('lineHeight').value;
+            });
+
+            bindSliderPair('letterSpacing', 'letterSpacingNum', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.letterSpacing = document.getElementById('letterSpacing').value + 'px';
+            });
+
+            bindSliderPair('opacitySlider', 'opacityNum', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                layer.style.opacity = document.getElementById('opacitySlider').value;
+            });
+
+            document.getElementById('enableEffects').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                if (!this.checked) {
+                    layer.style.boxShadow = '';
+                    layer.style.textShadow = '';
+                    layer.style.backdropFilter = '';
+                }
+            });
+
+            document.getElementById('enableBorder').addEventListener('change', function() {
+                applyBorder();
+            });
+
+            bindSliderPair('borderWidth', 'borderWidthNum', function() {
+                applyBorder();
+            });
+
+            document.getElementById('fontColor').addEventListener('click', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                var input = document.createElement('input');
+                input.type = 'color';
+                input.value = rgbToHex(layer.style.color || '#ffffff');
+                var self = this;
+                input.oninput = function() {
+                    self.style.background = this.value;
+                    layer.style.color = this.value;
+                };
+                input.click();
+            });
+
+            document.getElementById('borderColor').addEventListener('click', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                var input = document.createElement('input');
+                input.type = 'color';
+                input.value = rgbToHex(this.style.background || '#6c5ce7');
+                var self = this;
+                input.oninput = function() {
+                    self.style.background = this.value;
+                    if (document.getElementById('enableBorder').checked && layer) {
+                        var bw = document.getElementById('borderWidth').value;
+                        layer.style.border = bw + 'px solid ' + this.value;
+                    }
+                };
+                input.click();
+            });
+
+            bindSliderPair('brightness', 'brightnessNum', applyFilters);
+            bindSliderPair('contrast', 'contrastNum', applyFilters);
+            bindSliderPair('saturation', 'saturationNum', applyFilters);
+            bindSliderPair('blur', 'blurNum', applyFilters);
+
+            document.getElementById('enable3d').addEventListener('change', function() {
+                var layer = getLayerEl(selectedLayerId);
+                if (!layer) return;
+                if (!this.checked) {
+                    layer.style.transform = '';
+                    document.getElementById('perspectiveX').value = 0;
+                    document.getElementById('perspectiveXNum').value = 0;
+                    document.getElementById('perspectiveY').value = 0;
+                    document.getElementById('perspectiveYNum').value = 0;
+                } else {
+                    apply3D();
+                }
+            });
+
+            bindSliderPair('perspectiveX', 'perspectiveXNum', apply3D);
+            bindSliderPair('perspectiveY', 'perspectiveYNum', apply3D);
+
+            initProject();
+        });
+
+        function applyEffect(effectType) {
+            var layer = getLayerEl(selectedLayerId);
+            if (!layer) return;
+
+            switch (effectType) {
+                case 'glow':
+                    layer.style.boxShadow = '0 0 20px rgba(108, 92, 231, 0.8), 0 0 40px rgba(108, 92, 231, 0.4)';
+                    break;
+                case 'shadow':
+                    layer.style.boxShadow = '10px 10px 30px rgba(0, 0, 0, 0.5), -5px -5px 15px rgba(255, 255, 255, 0.1)';
+                    break;
+                case 'gradient':
+                    layer.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    break;
+                case 'glass':
+                    layer.style.background = 'rgba(255, 255, 255, 0.1)';
+                    layer.style.backdropFilter = 'blur(10px)';
+                    break;
+                case 'neon':
+                    layer.style.textShadow = '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff00ff, 0 0 40px #ff00ff';
+                    break;
+                case 'emboss':
+                    layer.style.textShadow = '1px 1px 0 #fff, -1px -1px 0 #333';
+                    break;
+            }
+        }
+
+        function exportConfig() {
+            var canvasArea = document.getElementById('canvasArea');
+            var layers = [];
+            document.querySelectorAll('.ad-layer').forEach(function(layer) {
+                var isText = layer.classList.contains('text-layer');
+                layers.push({
+                    id: layer.dataset.layerId,
+                    type: isText ? 'text' : 'image',
+                    x: parseInt(layer.style.left),
+                    y: parseInt(layer.style.top),
+                    width: layer.offsetWidth,
+                    height: layer.offsetHeight,
+                    content: isText ? layer.textContent.trim() : null
+                });
+            });
+            var config = { width: canvasArea.clientWidth, height: canvasArea.clientHeight, layers: layers };
+            var blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'advertisement-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('配置已导出！');
+        }
+
+        function previewAd() {
+            var canvasArea = document.getElementById('canvasArea');
+            var config = {
+                canvasWidth: canvasArea.clientWidth,
+                canvasHeight: canvasArea.clientHeight,
+                backgroundColor: canvasArea.style.background || '#1a1a1a',
+                layers: []
+            };
+            document.querySelectorAll('#canvasArea .ad-layer').forEach(function(layer) {
+                var isText = layer.classList.contains('text-layer');
+                var rect = layer.getBoundingClientRect();
+                var canvasRect = canvasArea.getBoundingClientRect();
+                var layerData = {
+                    layerType: isText ? 'text' : 'image',
+                    layerName: isText ? '文字图层' : '图片图层',
+                    posX: Math.round(rect.left - canvasRect.left),
+                    posY: Math.round(rect.top - canvasRect.top),
+                    width: Math.round(layer.offsetWidth),
+                    height: Math.round(layer.offsetHeight),
+                    zIndex: parseInt(layer.style.zIndex) || 0,
+                    textContent: isText ? (layer.textContent || '').replace(/\s+/g, ' ').trim() : '',
+                    fontSize: parseInt(layer.style.fontSize) || 24,
+                    fontColor: layer.style.color || '#ffffff',
+                    fontWeight: layer.style.fontWeight || 'bold',
+                    fontFamily: layer.style.fontFamily || 'Microsoft YaHei',
+                    fontStyle: layer.style.fontStyle || 'normal',
+                    textDecoration: layer.style.textDecoration || 'none',
+                    lineHeight: parseFloat(layer.style.lineHeight) || 1.5,
+                    letterSpacing: parseFloat(layer.style.letterSpacing) || 0,
+                    opacity: parseFloat(layer.style.opacity) || 1,
+                    textAlign: layer.style.textAlign || 'center',
+                    borderRadius: parseInt(layer.style.borderRadius) || 0,
+                    effect: {
+                        shadowEnabled: false, shadowX: 0, shadowY: 0, shadowBlur: 10,
+                        shadowColor: 'rgba(0,0,0,0.5)', glowEnabled: false, glowSize: 10,
+                        glowColor: 'rgba(108,92,231,0.8)', borderEnabled: false, borderWidth: 1,
+                        borderColor: '#6c5ce7', borderStyle: 'solid', brightness: 100,
+                        contrast: 100, saturation: 100, blur: 0, perspectiveEnabled: false,
+                        perspectiveX: 0, perspectiveY: 0
+                    }
+                };
+                var img = layer.querySelector('img');
+                if (img && img.src) {
+                    layerData.imageUrl = img.src;
+                }
+                config.layers.push(layerData);
+            });
+            sessionStorage.setItem('adPreviewConfig', JSON.stringify(config));
+            window.open('/preview', '_blank');
+        }
+
+        var currentProjectId = null;
+        var pages = [];
+        var currentPageId = null;
+
+        function showToast(msg, isError) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2200);
+        }
+
+        function getCurrentConfig() {
+            var canvasArea = document.getElementById('canvasArea');
+            var config = {
+                name: (document.getElementById('projectNameInput') && document.getElementById('projectNameInput').value) || '未命名项目',
+                canvasWidth: canvasArea.clientWidth,
+                canvasHeight: canvasArea.clientHeight,
+                backgroundColor: canvasArea.style.background || '#1a1a1a',
+                status: 1,
+                layers: []
+            };
+            document.querySelectorAll('#canvasArea .ad-layer').forEach(function(layer) {
+                var isText = layer.classList.contains('text-layer');
+                var layerId = String(layer.dataset.layerId || layer.id || '').replace('layer', '');
+                var rect = layer.getBoundingClientRect();
+                var canvasRect = canvasArea.getBoundingClientRect();
+                var textContent = '';
+                if (isText) {
+                    var span = layer.querySelector('.text-content');
+                    textContent = span ? span.textContent : layer.textContent || '';
+                    textContent = textContent.replace(/\s+/g, ' ').trim();
+                }
+                var layerData = {
+                    id: isNaN(parseInt(layerId)) ? null : parseInt(layerId),
+                    layerType: isText ? 'text' : 'image',
+                    layerName: (document.querySelector('.layer-item[data-layer-id="' + layer.dataset.layerId + '"] .layer-name')
+                        ? document.querySelector('.layer-item[data-layer-id="' + layer.dataset.layerId + '"] .layer-name').textContent
+                        : '') || (isText ? '文字图层' : '图片图层'),
+                    posX: Math.round((rect.left - canvasRect.left) / canvasScale),
+                    posY: Math.round((rect.top - canvasRect.top) / canvasScale),
+                    width: Math.round(layer.offsetWidth),
+                    height: Math.round(layer.offsetHeight),
+                    zIndex: parseInt(layer.style.zIndex) || 0,
+                    sortOrder: 0,
+                    textContent: textContent,
+                    fontSize: parseInt(layer.style.fontSize) || 24,
+                    fontColor: layer.style.color || '#ffffff',
+                    fontWeight: layer.style.fontWeight || 'bold',
+                    fontFamily: layer.style.fontFamily || 'Microsoft YaHei',
+                    fontStyle: layer.style.fontStyle || 'normal',
+                    textDecoration: layer.style.textDecoration || 'none',
+                    lineHeight: parseFloat(layer.style.lineHeight) || 1.5,
+                    letterSpacing: parseFloat(layer.style.letterSpacing) || 0,
+                    opacity: parseFloat(layer.style.opacity) || 1,
+                    textAlign: layer.style.textAlign || 'center',
+                    borderRadius: parseInt(layer.style.borderRadius) || 0,
+                    background: layer.style.background || '',
+                    effect: {
+                        shadowEnabled: false, shadowX: 0, shadowY: 0, shadowBlur: 10,
+                        shadowColor: 'rgba(0,0,0,0.5)', glowEnabled: false, glowSize: 10,
+                        glowColor: 'rgba(108,92,231,0.8)', borderEnabled: false, borderWidth: 1,
+                        borderColor: '#6c5ce7', borderStyle: 'solid', brightness: 100,
+                        contrast: 100, saturation: 100, blur: 0, perspectiveEnabled: false,
+                        perspectiveX: 0, perspectiveY: 0
+                    }
+                };
+                var boxShadow = layer.style.boxShadow;
+                if (boxShadow && boxShadow !== 'none') {
+                    layerData.effect.shadowEnabled = true;
+                    if (boxShadow.indexOf('0 0 ') >= 0) {
+                        layerData.effect.glowEnabled = true;
+                        var parts = boxShadow.split(' ');
+                        layerData.effect.glowSize = parseInt(parts[2].replace('px', '')) || 10;
+                        layerData.effect.glowColor = parts.slice(3).join(' ') || 'rgba(108,92,231,0.8)';
+                    }
+                }
+                var img = layer.querySelector('img');
+                if (img && img.src) {
+                    layerData.imageUrl = img.src;
+                }
+                config.layers.push(layerData);
+            });
+            config.layers.forEach(function(l, i) {
+                l.sortOrder = i;
+            });
+            return config;
+        }
+
+        function saveToServer() {
+            var config = getCurrentConfig();
+            var isUpdate = !!currentProjectId;
+
+            // 更新模式需要 currentPageId；新建模式直接放行
+            if (isUpdate && !currentPageId) {
+                showToast('❌ 请先创建项目', true);
+                return;
+            }
+
+            var url = isUpdate ? '/api/ad/project/' + currentProjectId : '/api/ad/project';
+            var method = isUpdate ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(function(res) {
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                return res.json();
+            })
+            .then(function(data) {
+                if (!data) return;
+                if (data.code === 200 && data.data) {
+                    if (!isUpdate) {
+                        currentProjectId = data.data.id || data.data;
+                        var titleInput = document.getElementById('projectNameInput');
+                        if (titleInput && !titleInput.value) {
+                            titleInput.value = config.name;
+                        }
+                        window.history.replaceState({}, '', '/project/' + currentProjectId);
+                        // 新建后加载项目，获取 currentPageId 及页面数据
+                        loadProject(currentProjectId);
+                    } else {
+                        saveCurrentPageLayers();
+                    }
+                } else {
+                    showToast('❌ ' + (data.message || '保存失败'), true);
+                }
+            })
+            .catch(function(err) {
+                showToast('❌ 网络错误，请重试', true);
+            });
+        }
+
+        function saveCurrentPageLayers() {
+            var canvasArea = document.getElementById('canvasArea');
+            var layerDTOs = [];
+            document.querySelectorAll('#canvasArea .ad-layer').forEach(function(layer, i) {
+                var isText = layer.classList.contains('text-layer');
+                var textContent = '';
+                if (isText) {
+                    var span = layer.querySelector('.text-content');
+                    textContent = span ? span.textContent : layer.textContent || '';
+                    textContent = textContent.replace(/\s+/g, ' ').trim();
+                }
+                layerDTOs.push({
+                    layerType: isText ? 'text' : 'image',
+                    layerName: '图层' + (i + 1),
+                    posX: parseInt(layer.style.left) || 0,
+                    posY: parseInt(layer.style.top) || 0,
+                    width: parseInt(layer.style.width) || 200,
+                    height: parseInt(layer.style.height) || 50,
+                    zIndex: parseInt(layer.style.zIndex) || i,
+                    sortOrder: i,
+                    textContent: textContent,
+                    fontSize: parseInt(layer.style.fontSize) || 24,
+                    fontColor: layer.style.color || '#ffffff',
+                    fontWeight: layer.style.fontWeight || 'bold',
+                    fontFamily: layer.style.fontFamily || 'Microsoft YaHei',
+                    fontStyle: layer.style.fontStyle || 'normal',
+                    textDecoration: layer.style.textDecoration || 'none',
+                    lineHeight: parseFloat(layer.style.lineHeight) || 1.5,
+                    letterSpacing: parseFloat(layer.style.letterSpacing) || 0,
+                    opacity: parseFloat(layer.style.opacity) || 1,
+                    textAlign: layer.style.textAlign || 'center',
+                    borderRadius: parseInt(layer.style.borderRadius) || 0,
+                    background: layer.style.background || '',
+                    imageUrl: (layer.querySelector('img') ? layer.querySelector('img').src : '') || null
+                });
+            });
+            fetch('/api/ad/project/' + currentProjectId + '/page/' + currentPageId + '/layers', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(layerDTOs)
+            })
+            .then(function(res) {
+                if (res.ok) showToast('✅ 保存成功！');
+                else showToast('❌ 图层保存失败', true);
+            })
+            .catch(function(err) {
+                showToast('❌ 网络错误，请重试', true);
+            });
+        }
+
+        function loadProject(projectId) {
+            fetch('/api/ad/project/' + projectId)
+                .then(function(res) {
+                    if (res.status === 401) { window.location.href = '/login'; return; }
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data || data.code !== 200 || !data.data) return;
+                    var project = data.data;
+                    currentProjectId = project.projectId;
+                    pages = project.pages || [];
+
+                    var titleInput = document.getElementById('projectNameInput');
+                    if (titleInput) titleInput.value = project.name || '';
+
+                    setCanvasSize(project.canvasWidth || 800, project.canvasHeight || 450);
+                    var canvasArea = document.getElementById('canvasArea');
+                    if (project.backgroundColor) {
+                        canvasArea.style.background = project.backgroundColor;
+                    }
+
+                    renderPageTabs();
+
+                    if (pages.length > 0) {
+                        switchPage(pages[0].pageId);
+                    }
+                    showToast('✅ 项目加载成功');
+                })
+                .catch(function(err) {
+                    showToast('❌ 加载失败: ' + err.message, true);
+                });
+        }
+
+        function renderPageTabs() {
+            var container = document.getElementById('pageTabs');
+            container.innerHTML = '';
+            pages.forEach(function(page, i) {
+                var tab = document.createElement('button');
+                tab.className = 'page-tab';
+                if (page.pageId === currentPageId) tab.classList.add('active');
+                tab.dataset.pageId = page.pageId;
+                tab.innerHTML = page.pageName;
+                if (pages.length > 1) {
+                    var del = document.createElement('span');
+                    del.className = 'page-tab-del';
+                    del.textContent = '✕';
+                    del.onclick = function(e) { e.stopPropagation(); deletePage(page.pageId); };
+                    tab.appendChild(del);
+                }
+                tab.onclick = function() { switchPage(page.pageId); };
+                container.appendChild(tab);
+            });
+            var addBtn = document.createElement('button');
+            addBtn.className = 'page-tab-add';
+            addBtn.title = '新建页面';
+            addBtn.textContent = '+';
+            addBtn.onclick = addPage;
+            container.appendChild(addBtn);
+        }
+
+        function switchPage(pageId) {
+            currentPageId = pageId;
+            var canvasArea = document.getElementById('canvasArea');
+            var layersList = document.getElementById('layersList');
+
+            var oldLayers = canvasArea.querySelectorAll('.ad-layer');
+            oldLayers.forEach(function(l) { l.remove(); });
+            layersList.innerHTML = '';
+
+            var page = pages.find(function(p) { return p.pageId === pageId; });
+            if (!page) return;
+
+            if (page.backgroundColor) {
+                canvasArea.style.background = page.backgroundColor;
+            }
+
+            var titleEl = canvasArea.querySelector('.canvas-title');
+            if (titleEl) titleEl.style.display = page.layers && page.layers.length > 0 ? 'none' : '';
+
+            if (page.layers && page.layers.length > 0) {
+                page.layers.forEach(function(layerDTO) {
+                    var newId = 'layer' + layerDTO.id;
+                    var isText = layerDTO.layerType === 'text';
+                    var div = document.createElement('div');
+                    div.className = 'ad-layer' + (isText ? ' text-layer' : '');
+                    div.id = newId;
+                    div.dataset.layerId = newId;
+                    div.style.position = 'absolute';
+                    div.style.left = (layerDTO.posX || 0) + 'px';
+                    div.style.top = (layerDTO.posY || 0) + 'px';
+                    div.style.width = (layerDTO.width || 200) + 'px';
+                    div.style.height = (layerDTO.height || 50) + 'px';
+                    div.style.zIndex = layerDTO.zIndex || 0;
+                    div.style.fontSize = (layerDTO.fontSize || 24) + 'px';
+                    div.style.color = layerDTO.fontColor || '#ffffff';
+                    div.style.fontWeight = layerDTO.fontWeight || 'bold';
+                    div.style.fontFamily = layerDTO.fontFamily || 'Microsoft YaHei';
+                    div.style.fontStyle = layerDTO.fontStyle || 'normal';
+                    div.style.textDecoration = layerDTO.textDecoration || 'none';
+                    div.style.lineHeight = (layerDTO.lineHeight || 1.5) + '';
+                    div.style.letterSpacing = (layerDTO.letterSpacing || 0) + 'px';
+                    div.style.opacity = (layerDTO.opacity != null ? layerDTO.opacity : 1) + '';
+                    div.style.textAlign = layerDTO.textAlign || 'center';
+                    div.style.borderRadius = (layerDTO.borderRadius || 0) + 'px';
+                    div.style.background = layerDTO.background || 'rgba(0,0,0,0.6)';
+
+                    if (isText) {
+                        div.innerHTML = '<div class="layer-resize-handle top-left"></div>' +
+                            '<div class="layer-resize-handle top-right"></div>' +
+                            '<div class="layer-resize-handle bottom-left"></div>' +
+                            '<div class="layer-resize-handle bottom-right"></div>' +
+                            '<span class="text-content">' + (layerDTO.textContent || '双击编辑') + '</span>';
+                    } else {
+                        div.innerHTML = '<div class="layer-resize-handle top-left"></div>' +
+                            '<div class="layer-resize-handle top-right"></div>' +
+                            '<div class="layer-resize-handle bottom-left"></div>' +
+                            '<div class="layer-resize-handle bottom-right"></div>' +
+                            '<div class="image-upload-area" style="width:100%;height:100%;">' +
+                            '<div class="image-upload-icon">📷</div>' +
+                            '<div class="image-upload-text">点击上传图片</div>' +
+                            '</div>';
+                        if (layerDTO.imageUrl) {
+                            var uploadArea = div.querySelector('.image-upload-area');
+                            uploadArea.outerHTML = '<img src="' + layerDTO.imageUrl + '" style="width:100%;height:100%;border-radius:4px;display:block;">';
+                        }
+                    }
+
+                    if (layerDTO.effect) {
+                        var fx = layerDTO.effect;
+                        if (fx.shadowEnabled) {
+                            div.style.boxShadow = fx.shadowX + 'px ' + fx.shadowY + 'px ' + fx.shadowBlur + 'px ' + fx.shadowColor;
+                        }
+                        if (fx.glowEnabled) {
+                            div.style.boxShadow = '0 0 ' + fx.glowSize + 'px ' + fx.glowColor;
+                        }
+                        if (fx.borderEnabled) {
+                            div.style.border = fx.borderWidth + 'px ' + fx.borderStyle + ' ' + fx.borderColor;
+                        }
+                        var filters = [];
+                        if (fx.brightness !== undefined && fx.brightness !== 100) filters.push('brightness(' + fx.brightness + '%)');
+                        if (fx.contrast !== undefined && fx.contrast !== 100) filters.push('contrast(' + fx.contrast + '%)');
+                        if (fx.saturation !== undefined && fx.saturation !== 100) filters.push('saturate(' + fx.saturation + '%)');
+                        if (fx.blur && fx.blur > 0) filters.push('blur(' + fx.blur + 'px)');
+                        if (filters.length > 0) div.style.filter = filters.join(' ');
+                        if (fx.perspectiveEnabled) {
+                            div.style.transform = 'perspective(500px) rotateX(' + fx.perspectiveY + 'deg) rotateY(' + fx.perspectiveX + 'deg)';
+                        }
+                    }
+
+                    canvasArea.appendChild(div);
+                    bindLayerEvents(div);
+                    if (!isText) {
+                        var uploadArea = div.querySelector('.image-upload-area');
+                        if (uploadArea) bindImageUpload(uploadArea);
+                    }
+
+                    var layerItem = document.createElement('div');
+                    layerItem.className = 'layer-item';
+                    layerItem.setAttribute('data-layer-id', newId);
+                    layerItem.innerHTML =
+                        '<div class="layer-icon ' + (isText ? 'text' : 'image') + '">' + (isText ? 'T' : '🖼️') + '</div>' +
+                        '<div class="layer-info">' +
+                        '<div class="layer-name">' + (layerDTO.layerName || (isText ? '文字图层' : '图片图层')) + '</div>' +
+                        '<div class="layer-type">' + (isText ? '文字' : '图片') + '图层 · ' + (layerDTO.width || 200) + ' x ' + (layerDTO.height || 50) + '</div>' +
+                        '</div>' +
+                        '<div class="layer-item-actions">' +
+                        '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                        '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                        '</div>';
+                    layersList.appendChild(layerItem);
+                    bindLayerItemEvents(layerItem);
+
+                    if (!isText && layerDTO.imageUrl) {
+                        var imgEl = div.querySelector('img');
+                        if (imgEl) {
+                            imgEl.onload = function() {
+                                var origW = this.naturalWidth;
+                                var origH = this.naturalHeight;
+                                var savedW = layerDTO.width || 200;
+                                var savedH = layerDTO.height || 150;
+                                var savedRatio = savedW / savedH;
+                                var imgRatio = origW / origH;
+                                if (Math.abs(savedRatio - imgRatio) > 0.05) {
+                                    var maxW = 350;
+                                    var maxH = 300;
+                                    var newW = origW;
+                                    var newH = origH;
+                                    if (origW > maxW || origH > maxH) {
+                                        var ratio = Math.min(maxW / origW, maxH / origH);
+                                        newW = Math.round(origW * ratio);
+                                        newH = Math.round(origH * ratio);
+                                    }
+                                    div.style.width = newW + 'px';
+                                    div.style.height = newH + 'px';
+                                    var typeEl = layerItem.querySelector('.layer-type');
+                                    if (typeEl) typeEl.textContent = '图片图层 · ' + newW + ' x ' + newH;
+                                }
+                            };
+                        }
+                    }
+                });
+
+                if (page.layers.length > 0) {
+                    selectLayer('layer' + page.layers[0].id);
+                }
+            }
+            renderPageTabs();
+        }
+
+        function addPage() {
+            if (!currentProjectId) {
+                showToast('请先保存项目或从项目链接进入', true);
+                return;
+            }
+            var pageName = '第' + (pages.length + 1) + '页';
+            fetch('/api/ad/project/' + currentProjectId + '/page', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pageName: pageName })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.code === 200 && data.data) {
+                    pages.push({ pageId: data.data.pageId, pageName: data.data.pageName, sortOrder: data.data.sortOrder, backgroundColor: data.data.backgroundColor, layers: [] });
+                    switchPage(data.data.pageId);
+                    showToast('页面添加成功');
+                } else {
+                    showToast(data.message || '添加页面失败', true);
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                showToast('网络错误，添加页面失败', true);
+            });
+        }
+
+        function deletePage(pageId) {
+            if (!currentProjectId || pages.length <= 1) {
+                showToast('至少保留一个页面', true);
+                return;
+            }
+            if (!confirm('确定删除该页面？页面内所有图层将被删除。')) return;
+            fetch('/api/ad/project/' + currentProjectId + '/page/' + pageId, { method: 'DELETE' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.code === 200) {
+                        pages = pages.filter(function(p) { return p.pageId !== pageId; });
+                        if (currentPageId === pageId && pages.length > 0) {
+                            switchPage(pages[0].pageId);
+                        }
+                        renderPageTabs();
+                        showToast('页面已删除');
+                    } else {
+                        showToast(data.message || '删除失败', true);
+                    }
+                });
+        }
+
+        function initProject() {
+            var path = window.location.pathname;
+            var match = path.match(/^\/project\/(\d+)$/);
+            if (match) {
+                currentProjectId = parseInt(match[1]);
+                loadProject(currentProjectId);
+            }
+        }
+
+        function bindSliderPair(sliderId, numId, onChange, format) {
+            var slider = document.getElementById(sliderId);
+            var num = document.getElementById(numId);
+            slider.addEventListener('input', function() {
+                num.value = this.value;
+                if (onChange) onChange();
+            });
+            num.addEventListener('input', function() {
+                slider.value = this.value;
+                if (onChange) onChange();
+            });
+            num.addEventListener('change', function() {
+                var v = parseInt(this.value);
+                if (isNaN(v)) return;
+                var min = parseInt(this.min);
+                var max = parseInt(this.max);
+                if (v < min) this.value = min;
+                if (v > max) this.value = max;
+                slider.value = this.value;
+                if (onChange) onChange();
+            });
+        }
+
+        function applyBorder() {
+            var layer = getLayerEl(selectedLayerId);
+            if (!layer) return;
+            if (document.getElementById('enableBorder').checked) {
+                var bw = document.getElementById('borderWidth').value;
+                var bc = document.getElementById('borderColor').style.background || '#6c5ce7';
+                layer.style.border = bw + 'px solid ' + bc;
+            } else {
+                layer.style.border = '';
+            }
+        }
+
+        function applyFilters() {
+            var layer = getLayerEl(selectedLayerId);
+            if (!layer) return;
+            var b = document.getElementById('brightness').value;
+            var c = document.getElementById('contrast').value;
+            var s = document.getElementById('saturation').value;
+            var bl = document.getElementById('blur').value;
+            layer.style.filter = 'brightness(' + b + '%) contrast(' + c + '%) saturate(' + s + '%) blur(' + bl + 'px)';
+        }
+
+        function apply3D() {
+            var layer = getLayerEl(selectedLayerId);
+            if (!layer || !document.getElementById('enable3d').checked) return;
+            var px = document.getElementById('perspectiveX').value;
+            var py = document.getElementById('perspectiveY').value;
+            layer.style.transform = 'perspective(500px) rotateX(' + py + 'deg) rotateY(' + px + 'deg)';
+        }
+
+        function rgbToHex(color) {
+            if (!color || color === 'transparent') return '#ffffff';
+            if (color.charAt(0) === '#') return color;
+            var m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!m) return '#ffffff';
+            return '#' + [m[1], m[2], m[3]].map(function(x) {
+                var h = parseInt(x).toString(16);
+                return h.length === 1 ? '0' + h : h;
+            }).join('');
+        }
+
+        var aiChatHistory = [];
+
+        function toggleAiPanel() {
+            var panel = document.getElementById('aiPanel');
+            var overlay = document.getElementById('aiOverlay');
+            var isOpen = panel.classList.contains('open');
+            if (isOpen) {
+                panel.classList.remove('open');
+                overlay.classList.remove('show');
+            } else {
+                panel.classList.add('open');
+                overlay.classList.add('show');
+                setTimeout(function() {
+                    document.getElementById('aiInput').focus();
+                }, 300);
+            }
+        }
+
+        function addAiMessage(role, content) {
+            var container = document.getElementById('aiMessages');
+            var div = document.createElement('div');
+            div.className = 'ai-message ' + role;
+            div.textContent = content;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return div;
+        }
+
+        function showAiTyping() {
+            var container = document.getElementById('aiMessages');
+            var div = document.createElement('div');
+            div.className = 'ai-message assistant';
+            div.id = 'aiTyping';
+            div.innerHTML = '<div class="ai-thinking"><span></span><span></span><span></span></div>';
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return div;
+        }
+
+        function removeAiTyping() {
+            var typing = document.getElementById('aiTyping');
+            if (typing) typing.remove();
+        }
+
+        function buildCanvasState() {
+            var canvasArea = document.getElementById('canvasArea');
+            var canvasW = parseInt(canvasArea.style.width) || canvasArea.clientWidth || 800;
+            var canvasH = parseInt(canvasArea.style.height) || canvasArea.clientHeight || 450;
+            var bgColor = canvasArea.style.backgroundColor || '#1a1a2e';
+
+            var layers = [];
+            canvasArea.querySelectorAll('.ad-layer').forEach(function(layer) {
+                var isText = layer.classList.contains('text-layer') || layer.querySelector('.text-content');
+                var imgEl = layer.querySelector('img');
+                var textContent = layer.querySelector('.text-content');
+
+                var layerInfo = {
+                    id: layer.dataset.layerId,
+                    type: isText ? 'text' : (imgEl ? 'image' : 'image'),
+                    x: parseInt(layer.style.left) || 0,
+                    y: parseInt(layer.style.top) || 0,
+                    width: parseInt(layer.style.width) || 0,
+                    height: parseInt(layer.style.height) || 0,
+                    opacity: parseFloat(layer.style.opacity) || 1,
+                    borderRadius: parseInt(layer.style.borderRadius) || 0,
+                    zIndex: parseInt(layer.style.zIndex) || 0
+                };
+
+                if (isText && textContent) {
+                    layerInfo.content = textContent.textContent || '';
+                    layerInfo.fontSize = parseInt(layer.style.fontSize) || 16;
+                    layerInfo.color = layer.style.color || '#ffffff';
+                    layerInfo.fontWeight = layer.style.fontWeight || 'normal';
+                    layerInfo.fontFamily = layer.style.fontFamily || 'Microsoft YaHei';
+                    layerInfo.textAlign = layer.style.textAlign || 'left';
+                }
+
+                if (imgEl) {
+                    layerInfo.imageUrl = imgEl.src || '';
+                }
+
+                layers.push(layerInfo);
+            });
+
+            return {
+                width: canvasW,
+                height: canvasH,
+                backgroundColor: bgColor,
+                layerCount: layers.length,
+                layers: layers
+            };
+        }
+
+        function sendAiMessage() {
+            var input = document.getElementById('aiInput');
+            var text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            input.style.height = 'auto';
+
+            addAiMessage('user', text);
+            aiChatHistory.push({ role: 'user', content: text });
+
+            var sendBtn = document.getElementById('aiSendBtn');
+            sendBtn.disabled = true;
+            showAiTyping();
+
+            var canvasState = buildCanvasState();
+            var userMsgWithState = '[画布状态]\n' + JSON.stringify(canvasState, null, 2) + '\n\n[用户消息]\n' + text;
+
+            var messagesWithContext = aiChatHistory.slice(0, -1);
+            messagesWithContext.push({ role: 'user', content: userMsgWithState });
+
+            fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: messagesWithContext })
+            })
+            .then(function(res) {
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                return res.json();
+            })
+            .then(function(data) {
+                removeAiTyping();
+                sendBtn.disabled = false;
+                if (data && data.code === 200 && data.data) {
+                    var reply = data.data.content || '暂无回复';
+                    var displayText = extractAndExecuteCommands(reply);
+                    addAiMessage('assistant', displayText);
+                    aiChatHistory.push({ role: 'assistant', content: reply });
+                } else {
+                    addAiMessage('assistant', '出错了：' + (data ? data.message : '未知错误'));
+                }
+            })
+            .catch(function(err) {
+                removeAiTyping();
+                sendBtn.disabled = false;
+                addAiMessage('assistant', '网络错误，请稍后重试');
+            });
+        }
+
+        function extractAndExecuteCommands(reply) {
+            var displayText = reply;
+            var jsonBlockRegex = /```json\s*([\s\S]*?)```/g;
+            var match;
+            var executedCount = 0;
+
+            while ((match = jsonBlockRegex.exec(reply)) !== null) {
+                try {
+                    var jsonStr = match[1].trim();
+                    var parsed = JSON.parse(jsonStr);
+                    var commands = Array.isArray(parsed) ? parsed : [parsed];
+                    for (var i = 0; i < commands.length; i++) {
+                        executeAiCommand(commands[i]);
+                        executedCount++;
+                    }
+                } catch (e) {
+                    console.warn('AI命令解析失败:', e, match[1]);
+                }
+            }
+
+            displayText = displayText.replace(/```json[\s\S]*?```/g, '').trim();
+            if (executedCount > 0) {
+                var tail = '\n\n✅ 已执行 ' + executedCount + ' 个画布操作';
+                if (!displayText) {
+                    displayText = tail;
+                } else {
+                    displayText += tail;
+                }
+            }
+            return displayText || '操作已完成';
+        }
+
+        function getAllLayerIds() {
+            var ids = [];
+            document.querySelectorAll('#canvasArea .ad-layer').forEach(function(l) {
+                ids.push(l.dataset.layerId);
+            });
+            return ids;
+        }
+
+        function executeAiCommand(cmd) {
+            if (!cmd || !cmd.action) return;
+            var action = cmd.action;
+            var params = cmd.params || {};
+
+            switch (action) {
+                case 'add_text_layer':
+                    aiAddTextLayer(params);
+                    break;
+                case 'add_image_layer':
+                    aiAddImageLayer(params);
+                    break;
+                case 'update_text':
+                    aiUpdateText(params);
+                    break;
+                case 'update_layer':
+                    aiUpdateLayer(params);
+                    break;
+                case 'set_image':
+                    aiSetImage(params);
+                    break;
+                case 'delete_layer':
+                    aiDeleteLayer(params);
+                    break;
+                case 'set_background':
+                    aiSetBackground(params);
+                    break;
+                case 'set_canvas_size':
+                    aiSetCanvasSize(params);
+                    break;
+                case 'apply_effect':
+                    aiApplyEffect(params);
+                    break;
+                case 'clear_all':
+                    aiClearAll();
+                    break;
+                case 'create_ad_layout':
+                    aiCreateAdLayout(params);
+                    break;
+                case 'reorder_layer':
+                    aiReorderLayer(params);
+                    break;
+                case 'switch_to_project':
+                    aiSwitchToProject(params);
+                    break;
+                case 'preview_project':
+                    aiPreviewProject(params);
+                    break;
+                case 'next_page':
+                    aiNextPage();
+                    break;
+                case 'prev_page':
+                    aiPrevPage();
+                    break;
+                default:
+                    console.warn('未知的AI命令:', action);
+            }
+        }
+
+        function aiAddTextLayer(params) {
+            var layersList = document.getElementById('layersList');
+            var canvasArea = document.getElementById('canvasArea');
+            var newId = 'ai_' + Date.now();
+            var text = params.text || '新文字';
+            var x = params.x != null ? params.x : 300;
+            var y = params.y != null ? params.y : 200;
+            var width = params.width != null ? params.width : 240;
+            var height = params.height != null ? params.height : 60;
+            var fontSize = params.fontSize != null ? params.fontSize : 24;
+            var color = params.color || '#ffffff';
+            var fontWeight = params.fontWeight || 'bold';
+            var fontFamily = params.fontFamily || 'Microsoft YaHei';
+            var fontStyle = params.fontStyle || 'normal';
+            var textDecoration = params.textDecoration || 'none';
+            var lineHeight = params.lineHeight != null ? params.lineHeight : 1.5;
+            var letterSpacing = params.letterSpacing != null ? params.letterSpacing : 0;
+            var opacity = params.opacity != null ? params.opacity : 1.0;
+            var textAlign = params.textAlign || 'center';
+            var borderRadius = params.borderRadius != null ? params.borderRadius : 8;
+            var background = params.background || 'rgba(0, 0, 0, 0.6)';
+            var layerName = params.layerName || 'AI文字图层';
+
+            var layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.dataset.layerId = newId;
+            layerItem.innerHTML =
+                '<div class="layer-icon text">T</div>' +
+                '<div class="layer-info">' +
+                '<div class="layer-name">' + escapeHtml(layerName) + '</div>' +
+                '<div class="layer-type">文字图层 · ' + width + ' x ' + height + '</div>' +
+                '</div>' +
+                '<div class="layer-item-actions">' +
+                '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                '</div>';
+            layersList.appendChild(layerItem);
+            bindLayerItemEvents(layerItem);
+
+            var layer = document.createElement('div');
+            layer.className = 'ad-layer text-layer';
+            layer.dataset.layerId = newId;
+            layer.style.left = x + 'px';
+            layer.style.top = y + 'px';
+            layer.style.width = width + 'px';
+            layer.style.height = height + 'px';
+            layer.style.fontSize = fontSize + 'px';
+            layer.style.color = color;
+            layer.style.fontWeight = fontWeight;
+            layer.style.fontFamily = fontFamily;
+            layer.style.fontStyle = fontStyle;
+            layer.style.textDecoration = textDecoration;
+            layer.style.lineHeight = lineHeight + '';
+            layer.style.letterSpacing = letterSpacing + 'px';
+            layer.style.opacity = opacity + '';
+            layer.style.textAlign = textAlign;
+            layer.style.borderRadius = borderRadius + 'px';
+            layer.style.background = background;
+            layer.innerHTML =
+                '<div class="layer-resize-handle top-left"></div>' +
+                '<div class="layer-resize-handle top-right"></div>' +
+                '<div class="layer-resize-handle bottom-left"></div>' +
+                '<div class="layer-resize-handle bottom-right"></div>' +
+                '<span class="text-content">' + escapeHtml(text) + '</span>';
+            canvasArea.appendChild(layer);
+            bindLayerEvents(layer);
+
+            var titleEl = canvasArea.querySelector('.canvas-title');
+            if (titleEl) titleEl.style.display = 'none';
+
+            selectLayer(newId);
+        }
+
+        function aiAddImageLayer(params) {
+            var layersList = document.getElementById('layersList');
+            var canvasArea = document.getElementById('canvasArea');
+            var newId = 'ai_' + Date.now();
+            var x = params.x != null ? params.x : 300;
+            var y = params.y != null ? params.y : 200;
+            var width = params.width != null ? params.width : 260;
+            var height = params.height != null ? params.height : 150;
+            var layerName = params.layerName || 'AI图片图层';
+            var imageUrl = params.imageUrl || params.src || params.url || '';
+            var borderRadius = params.borderRadius != null ? params.borderRadius : 4;
+            var opacity = params.opacity != null ? params.opacity : 1.0;
+
+            function createLayer(w, h) {
+                var layerItem = document.createElement('div');
+                layerItem.className = 'layer-item';
+                layerItem.dataset.layerId = newId;
+                layerItem.innerHTML =
+                    '<div class="layer-icon image">🖼️</div>' +
+                    '<div class="layer-info">' +
+                    '<div class="layer-name">' + escapeHtml(layerName) + '</div>' +
+                    '<div class="layer-type">图片图层 · ' + w + ' x ' + h + '</div>' +
+                    '</div>' +
+                    '<div class="layer-item-actions">' +
+                    '<button class="layer-action-btn" title="复制" onclick="event.stopPropagation(); copyLayerById(\'' + newId + '\');">📋</button>' +
+                    '<button class="layer-action-btn danger" title="删除" onclick="event.stopPropagation(); deleteLayerById(\'' + newId + '\');">✕</button>' +
+                    '</div>';
+                layersList.appendChild(layerItem);
+                bindLayerItemEvents(layerItem);
+
+                var layer = document.createElement('div');
+                layer.className = 'ad-layer';
+                layer.dataset.layerId = newId;
+                layer.style.left = x + 'px';
+                layer.style.top = y + 'px';
+                layer.style.width = w + 'px';
+                layer.style.height = h + 'px';
+                layer.style.opacity = opacity;
+                layer.style.borderRadius = borderRadius + 'px';
+
+                if (imageUrl) {
+                    layer.innerHTML =
+                        '<div class="layer-resize-handle top-left"></div>' +
+                        '<div class="layer-resize-handle top-right"></div>' +
+                        '<div class="layer-resize-handle bottom-left"></div>' +
+                        '<div class="layer-resize-handle bottom-right"></div>' +
+                        '<img src="' + imageUrl + '" style="width:100%;height:100%;display:block;border-radius:' + borderRadius + 'px;">';
+                } else {
+                    layer.innerHTML =
+                        '<div class="layer-resize-handle top-left"></div>' +
+                        '<div class="layer-resize-handle top-right"></div>' +
+                        '<div class="layer-resize-handle bottom-left"></div>' +
+                        '<div class="layer-resize-handle bottom-right"></div>' +
+                        '<div class="image-upload-area" style="width:100%;height:100%;border-radius:' + borderRadius + 'px;">' +
+                        '<div class="image-upload-icon">🖼️</div>' +
+                        '<div class="image-upload-text">点击上传图片</div>' +
+                        '</div>';
+                }
+                canvasArea.appendChild(layer);
+                bindLayerEvents(layer);
+
+                var titleEl = canvasArea.querySelector('.canvas-title');
+                if (titleEl) titleEl.style.display = 'none';
+
+                var uploadArea = layer.querySelector('.image-upload-area');
+                if (uploadArea) bindImageUpload(uploadArea);
+
+                selectLayer(newId);
+            }
+
+            if (imageUrl) {
+                var tempImg = new Image();
+                tempImg.onload = function() {
+                    var origW = this.naturalWidth;
+                    var origH = this.naturalHeight;
+                    var maxW = 350;
+                    var maxH = 300;
+                    var scale = Math.min(maxW / origW, maxH / origH, 1);
+                    createLayer(Math.round(origW * scale), Math.round(origH * scale));
+                };
+                tempImg.onerror = function() {
+                    createLayer(width, height);
+                };
+                tempImg.src = imageUrl;
+            } else {
+                createLayer(width, height);
+            }
+        }
+
+        function aiUpdateText(params) {
+            var layerId = params.layerId;
+            var text = params.text;
+            if (!layerId || text == null) return;
+
+            var layer = getLayerEl(layerId);
+            if (!layer) {
+                var allIds = getAllLayerIds();
+                var idx = parseInt(layerId);
+                if (!isNaN(idx) && idx >= 0 && idx < allIds.length) {
+                    layer = getLayerEl(allIds[idx]);
+                }
+            }
+            if (!layer) return;
+
+            var textContent = layer.querySelector('.text-content');
+            if (!textContent) {
+                textContent = document.createElement('span');
+                textContent.className = 'text-content';
+                textContent.style.cssText = 'display:block;outline:none;';
+                var children = Array.from(layer.childNodes);
+                children.forEach(function(node) {
+                    if (!node.classList || !node.classList.contains('layer-resize-handle')) {
+                        textContent.appendChild(node);
+                    }
+                });
+                layer.appendChild(textContent);
+            }
+            textContent.textContent = text;
+
+            var itemEl = getLayerItemEl(layerId);
+            if (itemEl) {
+                var nameEl = itemEl.querySelector('.layer-name');
+                if (nameEl && text.length > 12) {
+                    nameEl.textContent = text.substring(0, 12) + '...';
+                } else if (nameEl) {
+                    nameEl.textContent = text;
+                }
+            }
+        }
+
+        function aiUpdateLayer(params) {
+            var layerId = params.layerId;
+            var layer = getLayerEl(layerId);
+            if (!layer) {
+                var allIds = getAllLayerIds();
+                var idx = parseInt(layerId);
+                if (!isNaN(idx) && idx >= 0 && idx < allIds.length) {
+                    layer = getLayerEl(allIds[idx]);
+                }
+            }
+            if (!layer) return;
+
+            if (params.x != null) layer.style.left = params.x + 'px';
+            if (params.y != null) layer.style.top = params.y + 'px';
+            if (params.width != null) layer.style.width = params.width + 'px';
+            if (params.height != null) layer.style.height = params.height + 'px';
+            if (params.fontSize != null) layer.style.fontSize = params.fontSize + 'px';
+            if (params.color) layer.style.color = params.color;
+            if (params.fontWeight) layer.style.fontWeight = params.fontWeight;
+            if (params.fontFamily) layer.style.fontFamily = params.fontFamily;
+            if (params.fontStyle) layer.style.fontStyle = params.fontStyle;
+            if (params.textDecoration) layer.style.textDecoration = params.textDecoration;
+            if (params.lineHeight != null) layer.style.lineHeight = params.lineHeight + '';
+            if (params.letterSpacing != null) layer.style.letterSpacing = params.letterSpacing + 'px';
+            if (params.opacity != null) layer.style.opacity = params.opacity + '';
+            if (params.textAlign) layer.style.textAlign = params.textAlign;
+            if (params.borderRadius != null) layer.style.borderRadius = params.borderRadius + 'px';
+            if (params.background) layer.style.background = params.background;
+            if (params.zIndex != null) layer.style.zIndex = params.zIndex;
+
+            if (params.text != null) {
+                aiUpdateText({ layerId: layerId, text: params.text });
+            }
+
+            if (params.imageUrl != null || params.src != null || params.url != null) {
+                var newImgUrl = params.imageUrl || params.src || params.url;
+                var tempImg = new Image();
+                tempImg.onload = function() {
+                    var origW = this.naturalWidth;
+                    var origH = this.naturalHeight;
+                    var maxW = 350;
+                    var maxH = 300;
+                    var scale = Math.min(maxW / origW, maxH / origH, 1);
+                    var newW = Math.round(origW * scale);
+                    var newH = Math.round(origH * scale);
+                    layer.style.width = newW + 'px';
+                    layer.style.height = newH + 'px';
+
+                    var imgEl = layer.querySelector('img');
+                    var uploadArea = layer.querySelector('.image-upload-area');
+                    var radius = params.borderRadius != null ? params.borderRadius : parseInt(layer.style.borderRadius) || 4;
+
+                    if (imgEl) {
+                        imgEl.src = newImgUrl;
+                        imgEl.style.borderRadius = radius + 'px';
+                    } else if (uploadArea) {
+                        uploadArea.outerHTML = '<img src="' + newImgUrl + '" style="width:100%;height:100%;display:block;border-radius:' + radius + 'px;">';
+                    }
+                };
+                tempImg.src = newImgUrl;
+            }
+        }
+
+        function aiSetImage(params) {
+            var layerId = params.layerId;
+            var imageUrl = params.imageUrl || params.src || params.url;
+            if (!layerId || !imageUrl) return;
+
+            var layer = getLayerEl(layerId);
+            if (!layer) {
+                var allIds = getAllLayerIds();
+                var idx = parseInt(layerId);
+                if (!isNaN(idx) && idx >= 0 && idx < allIds.length) {
+                    layer = getLayerEl(allIds[idx]);
+                }
+            }
+            if (!layer) return;
+
+            var tempImg = new Image();
+            tempImg.onload = function() {
+                var origW = this.naturalWidth;
+                var origH = this.naturalHeight;
+                var maxW = 350;
+                var maxH = 300;
+                var scale = Math.min(maxW / origW, maxH / origH, 1);
+                var newW = Math.round(origW * scale);
+                var newH = Math.round(origH * scale);
+                layer.style.width = newW + 'px';
+                layer.style.height = newH + 'px';
+
+                var imgEl = layer.querySelector('img');
+                var uploadArea = layer.querySelector('.image-upload-area');
+                var radius = params.borderRadius != null ? params.borderRadius : parseInt(layer.style.borderRadius) || 4;
+
+                if (imgEl) {
+                    imgEl.src = imageUrl;
+                    imgEl.style.borderRadius = radius + 'px';
+                    imgEl.style.display = 'block';
+                } else if (uploadArea) {
+                    uploadArea.outerHTML = '<img src="' + imageUrl + '" style="width:100%;height:100%;display:block;border-radius:' + radius + 'px;">';
+                }
+
+                if (params.opacity != null) layer.style.opacity = params.opacity;
+            };
+            tempImg.src = imageUrl;
+        }
+
+        function aiDeleteLayer(params) {
+            var layerId = params.layerId;
+            var layer = getLayerEl(layerId);
+            if (!layer) {
+                var allIds = getAllLayerIds();
+                var idx = parseInt(layerId);
+                if (!isNaN(idx) && idx >= 0 && idx < allIds.length) {
+                    layerId = allIds[idx];
+                    layer = getLayerEl(layerId);
+                }
+            }
+            if (!layer) return;
+
+            selectedLayerId = layerId;
+            deleteLayer();
+        }
+
+        function aiSetBackground(params) {
+            var color = params.color || '#1a1a1a';
+            document.getElementById('canvasArea').style.background = color;
+        }
+
+        function aiSetCanvasSize(params) {
+            var w = params.width || 800;
+            var h = params.height || 450;
+            setCanvasSize(w, h);
+            var preset = document.getElementById('canvasSizePreset');
+            var key = w + 'x' + h;
+            var presetOptions = {
+                '800x450': '横版大图 800×450',
+                '600x600': '方形 600×600',
+                '450x800': '竖版 450×800',
+                '1200x400': '宽横幅 1200×400'
+            };
+            if (presetOptions[key]) {
+                for (var i = 0; i < preset.options.length; i++) {
+                    if (preset.options[i].value === key) {
+                        preset.selectedIndex = i;
+                        break;
+                    }
+                }
+                document.getElementById('canvasSizeInputs').style.display = 'none';
+            } else {
+                preset.value = 'custom';
+                document.getElementById('canvasSizeInputs').style.display = 'flex';
+                document.getElementById('canvasWidth').value = w;
+                document.getElementById('canvasHeight').value = h;
+            }
+        }
+
+        function aiApplyEffect(params) {
+            var layerId = params.layerId;
+            var effect = params.effect;
+            var layer = getLayerEl(layerId);
+            if (!layer) {
+                var allIds = getAllLayerIds();
+                var idx = parseInt(layerId);
+                if (!isNaN(idx) && idx >= 0 && idx < allIds.length) {
+                    layer = getLayerEl(allIds[idx]);
+                }
+            }
+            if (!layer) return;
+
+            switch (effect) {
+                case 'glow':
+                    layer.style.boxShadow = '0 0 20px rgba(108, 92, 231, 0.8), 0 0 40px rgba(108, 92, 231, 0.4)';
+                    break;
+                case 'shadow':
+                    layer.style.boxShadow = '10px 10px 30px rgba(0, 0, 0, 0.5), -5px -5px 15px rgba(255, 255, 255, 0.1)';
+                    break;
+                case 'gradient':
+                    layer.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    break;
+                case 'glass':
+                    layer.style.background = 'rgba(255, 255, 255, 0.1)';
+                    layer.style.backdropFilter = 'blur(10px)';
+                    break;
+                case 'neon':
+                    layer.style.textShadow = '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff00ff, 0 0 40px #ff00ff';
+                    break;
+                case 'emboss':
+                    layer.style.textShadow = '1px 1px 0 #fff, -1px -1px 0 #333';
+                    break;
+            }
+        }
+
+        function aiClearAll() {
+            document.querySelectorAll('#canvasArea .ad-layer').forEach(function(l) { l.remove(); });
+            document.querySelectorAll('#layersList .layer-item').forEach(function(l) { l.remove(); });
+            selectedLayerId = null;
+            var titleEl = document.querySelector('#canvasArea .canvas-title');
+            if (titleEl) titleEl.style.display = '';
+        }
+
+        function aiReorderLayer(params) {
+            var direction = params.direction || 'up';
+            var layerId = params.layerId != null ? String(params.layerId) : null;
+            if (layerId) {
+                var list = document.getElementById('layersList');
+                var item = list.querySelector('.layer-item[data-layer-id="' + layerId + '"]');
+                if (!item) { showToast('❌ 未找到图层 ' + layerId, true); return; }
+                if (direction === 'front' || direction === 'top') {
+                    list.appendChild(item);
+                } else if (direction === 'back' || direction === 'bottom') {
+                    list.insertBefore(item, list.firstChild);
+                } else if (direction === 'up') {
+                    var prev = item.previousElementSibling;
+                    if (prev) list.insertBefore(item, prev);
+                } else if (direction === 'down') {
+                    var next = item.nextElementSibling;
+                    if (next) list.insertBefore(next, item);
+                }
+                reindexLayers();
+                selectLayer(layerId);
+                showToast('✅ 图层层级已调整');
+            } else if (direction === 'front' || direction === 'top') {
+                bringToFront();
+                showToast('✅ 已置顶');
+            } else if (direction === 'back' || direction === 'bottom') {
+                sendToBack();
+                showToast('✅ 已置底');
+            } else if (direction === 'up' && selectedLayerId) {
+                var list = document.getElementById('layersList');
+                var item = list.querySelector('.layer-item[data-layer-id="' + selectedLayerId + '"]');
+                var prev = item && item.previousElementSibling;
+                if (prev) { list.insertBefore(item, prev); reindexLayers(); showToast('✅ 上移一层'); }
+                else showToast('✅ 已经在最上层');
+            } else if (direction === 'down' && selectedLayerId) {
+                var list = document.getElementById('layersList');
+                var item = list.querySelector('.layer-item[data-layer-id="' + selectedLayerId + '"]');
+                var next = item && item.nextElementSibling;
+                if (next) { list.insertBefore(next, item); reindexLayers(); showToast('✅ 下移一层'); }
+                else showToast('✅ 已经在最下层');
+            }
+        }
+
+        function aiSwitchToProject(params) {
+            var projectId = params.projectId;
+            if (!projectId) { showToast('❌ 请指定要切换的项目ID', true); return; }
+            if (currentProjectId && currentProjectId == projectId) {
+                showToast('✅ 已在当前项目中');
+                return;
+            }
+            currentProjectId = parseInt(projectId);
+            window.history.replaceState({}, '', '/project/' + currentProjectId);
+            loadProject(currentProjectId);
+            showToast('✅ 已切换到项目 ' + projectId);
+        }
+
+        function aiPreviewProject(params) {
+            var projectId = params.projectId;
+            if (!projectId) {
+                if (currentProjectId) {
+                    projectId = currentProjectId;
+                } else {
+                    showToast('❌ 请指定要预览的项目ID', true);
+                    return;
+                }
+            }
+            var page = params.page != null ? parseInt(params.page) : 0;
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            var previewUrl = '/preview?projectId=' + projectId + '&page=' + page;
+            var w = window.open(previewUrl, 'adPreview', 'width=' + width + ',height=' + height + ',menubar=no,toolbar=no,location=no,status=no');
+            if (!w) {
+                window.location.href = previewUrl;
+            }
+            showToast('✅ 正在打开广告预览');
+        }
+
+        function aiNextPage() {
+            if (!currentProjectId) { showToast('❌ 请先加载项目', true); return; }
+            var currentIdx = -1;
+            for (var i = 0; i < pages.length; i++) {
+                if (pages[i].pageId === currentPageId) { currentIdx = i; break; }
+            }
+            if (currentIdx >= 0 && currentIdx < pages.length - 1) {
+                switchPage(pages[currentIdx + 1].pageId);
+                showToast('✅ 切换到下一页: ' + pages[currentIdx + 1].pageName);
+            } else {
+                addPage();
+            }
+        }
+
+        function aiPrevPage() {
+            if (!currentProjectId) { showToast('❌ 请先加载项目', true); return; }
+            var currentIdx = -1;
+            for (var i = 0; i < pages.length; i++) {
+                if (pages[i].pageId === currentPageId) { currentIdx = i; break; }
+            }
+            if (currentIdx > 0) {
+                switchPage(pages[currentIdx - 1].pageId);
+                showToast('✅ 切换到上一页: ' + pages[currentIdx - 1].pageName);
+            } else {
+                showToast('✅ 已经是第一页');
+            }
+        }
+
+        function aiCreateAdLayout(params) {
+            var title = params.title || '主标题';
+            var subtitle = params.subtitle || '';
+            var cta = params.cta || '';
+            var style = params.style || 'modern';
+            var imageUrl = params.imageUrl || '';
+
+            aiClearAll();
+
+            var canvasW = parseInt(document.getElementById('canvasArea').style.width) || 800;
+            var canvasH = parseInt(document.getElementById('canvasArea').style.height) || 450;
+
+            if (style === 'modern') {
+                aiSetBackground({ color: '#0f0c29' });
+            } else if (style === 'warm') {
+                aiSetBackground({ color: '#2d1b00' });
+            } else if (style === 'clean') {
+                aiSetBackground({ color: '#1a1a2e' });
+            }
+
+            var titleFontSize = style === 'modern' ? 38 : (style === 'warm' ? 36 : 32);
+            var titleColor = style === 'modern' ? '#FFD700' : (style === 'warm' ? '#FF6B35' : '#00D2FF');
+            var titleY = canvasH * 0.18;
+            aiAddTextLayer({
+                text: title, layerName: '主标题',
+                x: (canvasW - 500) / 2, y: Math.round(titleY),
+                width: 500, height: 70,
+                fontSize: titleFontSize, color: titleColor,
+                fontWeight: 'bold', textAlign: 'center',
+                background: 'transparent'
+            });
+
+            if (subtitle) {
+                aiAddTextLayer({
+                    text: subtitle, layerName: '副标题',
+                    x: (canvasW - 460) / 2, y: Math.round(titleY + 85),
+                    width: 460, height: 45,
+                    fontSize: 18, color: '#cccccc',
+                    fontWeight: 'normal', textAlign: 'center',
+                    background: 'transparent'
+                });
+            }
+
+            aiAddImageLayer({
+                layerName: '广告图片',
+                x: (canvasW - 280) / 2, y: Math.round(canvasH * 0.45),
+                width: 280, height: 160,
+                imageUrl: imageUrl
+            });
+
+            if (cta) {
+                aiAddTextLayer({
+                    text: cta, layerName: '行动按钮',
+                    x: (canvasW - 200) / 2, y: Math.round(canvasH * 0.85),
+                    width: 200, height: 45,
+                    fontSize: 18, color: '#ffffff',
+                    fontWeight: 'bold', textAlign: 'center',
+                    borderRadius: 25,
+                    background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)'
+                });
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function quickAiAction(actionType) {
+            var canvasArea = document.getElementById('canvasArea');
+            var canvasW = parseInt(canvasArea.style.width) || canvasArea.clientWidth || 800;
+            var canvasH = parseInt(canvasArea.style.height) || canvasArea.clientHeight || 450;
+
+            var prompts = {
+                'add_title': '请在画布上添加一个醒目的主标题文字图层，文字内容要有吸引力（比如"限时特惠"、"品质之选"等），放在画布上方居中位置，字号要大（32-38px），使用醒目的颜色。画布尺寸是' + canvasW + 'x' + canvasH + '。',
+                'add_subtitle': '请在画布主标题下方添加一个副标题文字图层，用简洁的文字补充说明（比如"年度最值得期待的产品"），字号中等（18-20px），颜色柔和。画布尺寸是' + canvasW + 'x' + canvasH + '。',
+                'create_layout': '请帮我创建一个完整的广告布局，包含：1)一个醒目的主标题 2)一个副标题 3)一个图片占位区域 4)一个行动号召按钮。画布尺寸是' + canvasW + 'x' + canvasH + '，使用' + (Math.random() > 0.5 ? 'modern' : 'clean') + '风格。',
+                'add_cta': '请在画布底部居中位置添加一个行动号召按钮文字图层（比如"立即购买"、"了解更多"），圆角设计，使用渐变色背景。画布尺寸是' + canvasW + 'x' + canvasH + '。'
+            };
+
+            var prompt = prompts[actionType];
+            if (!prompt) return;
+
+            var input = document.getElementById('aiInput');
+            input.value = prompt;
+            sendAiMessage();
+        }
+
+        var aiCameraStream = null;
+
+        function openCameraForVision() {
+            var chatMessages = document.getElementById('aiMessages');
+            addAiMessage('user', '[视觉识别] 正在打开摄像头...');
+
+            var existing = document.getElementById('cameraModal');
+            if (existing) existing.remove();
+
+            var modal = document.createElement('div');
+            modal.id = 'cameraModal';
+            modal.className = 'camera-modal';
+            modal.innerHTML =
+                '<div class="camera-modal-mask" onclick="closeCameraModal()"></div>' +
+                '<div class="camera-modal-body">' +
+                    '<div class="camera-modal-header">' +
+                        '<span>📷 动作识别 — 请在摄像头前做出动作</span>' +
+                        '<button onclick="closeCameraModal()">✕</button>' +
+                    '</div>' +
+                    '<div class="camera-preview-wrap">' +
+                        '<video id="cameraVideo" autoplay playsinline></video>' +
+                        '<canvas id="cameraCanvas" style="display:none;"></canvas>' +
+                    '</div>' +
+                    '<div class="camera-modal-footer">' +
+                        '<button id="cameraCaptureBtn" onclick="captureAndAnalyze()">📸 拍照识别</button>' +
+                        '<button onclick="closeCameraModal()">取消</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(modal);
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                .then(function(stream) {
+                    aiCameraStream = stream;
+                    var video = document.getElementById('cameraVideo');
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function(err) {
+                    removeAiTyping();
+                    addAiMessage('assistant', '无法打开摄像头，请检查权限设置：' + err.message);
+                    closeCameraModal();
+                });
+        }
+
+        function closeCameraModal() {
+            if (aiCameraStream) {
+                aiCameraStream.getTracks().forEach(function(track) { track.stop(); });
+                aiCameraStream = null;
+            }
+            var modal = document.getElementById('cameraModal');
+            if (modal) modal.remove();
+        }
+
+        function captureAndAnalyze() {
+            var video = document.getElementById('cameraVideo');
+            var canvas = document.getElementById('cameraCanvas');
+            if (!video || !canvas) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            var base64 = canvas.toDataURL('image/jpeg', 0.85);
+            closeCameraModal();
+            showAiTyping();
+
+            fetch('/api/ai/vision', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image: base64,
+                    prompt: '请描述画面中人物的动作、姿势、手势，以及所处的环境。如果是用户正在做某个动作或姿势，请详细分析。请用中文回复。'
+                })
+            })
+            .then(function(res) {
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                return res.json();
+            })
+            .then(function(data) {
+                removeAiTyping();
+                if (data && data.code === 200 && data.data) {
+                    addAiMessage('assistant', data.data.content || '暂无分析结果');
+                } else {
+                    addAiMessage('assistant', '识别失败：' + (data ? data.message : '未知错误'));
+                }
+            })
+            .catch(function(err) {
+                removeAiTyping();
+                addAiMessage('assistant', '网络错误，请稍后重试');
+            });
+        }
+
+        function suggestAdCopy() {
+            aiChatHistory = [];
+            var container = document.getElementById('aiMessages');
+            container.innerHTML = '';
+            addAiMessage('assistant', '正在分析你的广告画布，生成文案建议...');
+            showAiTyping();
+
+            var canvasArea = document.getElementById('canvasArea');
+            var contextInfo = '画布尺寸：' + canvasArea.clientWidth + 'x' + canvasArea.clientHeight + '。';
+
+            var textLayers = canvasArea.querySelectorAll('.ad-layer.text-layer');
+            if (textLayers.length > 0) {
+                contextInfo += '现有文字：';
+                textLayers.forEach(function(l) {
+                    contextInfo += '"' + (l.textContent || '').trim() + '" ';
+                });
+            } else {
+                contextInfo += '暂无文字内容。';
+            }
+
+            fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'user', content: '请根据以下广告画布信息，给出3条有吸引力的广告文案建议，每条文案简洁有力，适合广告展示。\n' + contextInfo }
+                    ]
+                })
+            })
+            .then(function(res) {
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                return res.json();
+            })
+            .then(function(data) {
+                removeAiTyping();
+                if (data && data.code === 200 && data.data) {
+                    addAiMessage('assistant', data.data.content || '暂无建议');
+                    aiChatHistory.push({ role: 'assistant', content: data.data.content || '暂无建议' });
+                } else {
+                    addAiMessage('assistant', '生成建议失败：' + (data ? data.message : '未知错误'));
+                }
+            })
+            .catch(function(err) {
+                removeAiTyping();
+                addAiMessage('assistant', '网络错误，请稍后重试');
+            });
+        }
+
+        var aiInputEl = document.getElementById('aiInput');
+        if (aiInputEl) {
+            aiInputEl.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+        }
+    </script>
+    <div class="toast" id="toast"></div>
+    <div class="ai-overlay" id="aiOverlay" onclick="toggleAiPanel()"></div>
+    <div class="ai-panel" id="aiPanel">
+        <div class="ai-panel-header">
+            <div class="ai-title"><span>🤖</span> AI 广告助手</div>
+            <button class="ai-close" onclick="toggleAiPanel()">✕</button>
+        </div>
+        <div class="ai-messages" id="aiMessages">
+            <div class="ai-message assistant">你好！我是AI广告助手，可以帮你设计广告文案、分析图片动作，有什么需要帮忙的吗？</div>
+        </div>
+        <div class="ai-actions" style="flex-wrap:wrap;">
+            <button class="ai-action-btn primary" onclick="quickAiAction('add_title')" title="添加一个醒目的主标题">📝 添加标题</button>
+            <button class="ai-action-btn" onclick="quickAiAction('add_subtitle')" title="添加副标题文字">📄 添加副标题</button>
+            <button class="ai-action-btn" onclick="quickAiAction('create_layout')" title="一键生成完整广告布局">🎨 生成布局</button>
+            <button class="ai-action-btn" onclick="quickAiAction('add_cta')" title="添加行动号召按钮">🔘 添加按钮</button>
+            <button class="ai-action-btn" onclick="openCameraForVision()">📷 动作识别</button>
+            <button class="ai-action-btn" onclick="suggestAdCopy()">💡 文案建议</button>
+        </div>
+        <div class="ai-input-area">
+            <textarea id="aiInput" placeholder="输入你的问题..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage();}"></textarea>
+            <button class="ai-send-btn" id="aiSendBtn" onclick="sendAiMessage()">➤</button>
+        </div>
+    </div>
+</body>
+</html>

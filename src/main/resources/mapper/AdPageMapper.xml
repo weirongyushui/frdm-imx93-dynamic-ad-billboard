@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.AdPageMapper">
+
+    <resultMap id="pageMap" type="sia.advertisement.entity.AdPage">
+        <id property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="pageName" column="page_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="backgroundColor" column="background_color"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="pageMap">
+        SELECT id, project_id, page_name, sort_order, background_color, created_at, updated_at
+        FROM ad_page WHERE id = #{id}
+    </select>
+
+    <select id="selectByProjectId" resultMap="pageMap">
+        SELECT id, project_id, page_name, sort_order, background_color, created_at, updated_at
+        FROM ad_page WHERE project_id = #{projectId}
+        ORDER BY sort_order ASC
+    </select>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.AdPage"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ad_page (project_id, page_name, sort_order, background_color)
+        VALUES (#{projectId}, #{pageName}, #{sortOrder}, #{backgroundColor})
+    </insert>
+
+    <update id="update" parameterType="sia.advertisement.entity.AdPage">
+        UPDATE ad_page
+        SET page_name = #{pageName},
+            sort_order = #{sortOrder},
+            background_color = #{backgroundColor}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ad_page WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProjectId">
+        DELETE FROM ad_page WHERE project_id = #{projectId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 广告牌编辑系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+            background: #0c0c1d;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #14142b 0%, #1a1a35 100%);
+            border-bottom: 1px solid #2a2a4a;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #5a4bd1 100%);
+            color: white;
+        }
+
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #34495e;
+            color: #ccc;
+        }
+
+        .btn-outline:hover { border-color: #6c5ce7; color: #fff; }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .btn-danger:hover { background: #e74c3c; color: white; }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 20px;
+            background: linear-gradient(135deg, #14142b 0%, #1a1a35 100%);
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6c5ce7;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .settings-card {
+            background: linear-gradient(135deg, #14142b 0%, #1a1a35 100%);
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            padding: 22px 24px;
+            margin-bottom: 28px;
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .settings-desc {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-field label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .form-field input {
+            padding: 10px 12px;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            background: #0c0c1d;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+
+        .settings-meta {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .status-badge.on {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+        }
+
+        .status-badge.off {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid { grid-template-columns: 1fr; }
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+        }
+
+        .project-card {
+            background: #14142b;
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            border-color: #6c5ce7;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.15);
+        }
+
+        .card-preview {
+            width: 100%;
+            height: 160px;
+            background: #1a1a35;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-preview-canvas {
+            width: 90%;
+            height: 78%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: #555;
+            border: 1px dashed #2a2a4a;
+        }
+
+        .card-body {
+            padding: 16px 18px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-draft {
+            background: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+        }
+
+        .status-done {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #2a2a4a;
+        }
+
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-audience {
+            background: rgba(108, 92, 231, 0.15);
+            color: #a29bfe;
+        }
+
+        .tag-age {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+        }
+
+        .tag-style {
+            background: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+        }
+
+        .tag-product {
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+        }
+
+        .tag-category {
+            background: rgba(46, 204, 113, 0.15);
+            color: #26de81;
+        }
+
+        .tag-gender {
+            background: rgba(255, 127, 80, 0.15);
+            color: #ff9f43;
+        }
+
+        .card-tags-loading {
+            font-size: 12px;
+            color: #7f8c8d;
+            padding: 8px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .toast.error { background: #e74c3c; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
+        .toast.show { opacity: 1; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #1a1a35;
+            border: 1px solid #2a2a4a;
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px 14px; }
+            .project-grid { grid-template-columns: 1fr; }
+            .stats-row { flex-direction: column; }
+            .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="/editor" class="logo">
+                <div class="logo-icon">📢</div>
+                <span>广告牌编辑系统</span>
+            </a>
+        </div>
+        <div class="header-right">
+            <span class="user-info">
+                <span class="user-avatar" id="userAvatar">U</span>
+                <span id="userNickname">用户</span>
+            </span>
+            <a href="/editor" class="btn btn-primary">➕ 新建项目</a>
+            <button class="btn btn-primary" style="background: linear-gradient(135deg, #00b894 0%, #00a085 100%);" onclick="openShowcaseModal()">▶ 开始展示</button>
+            <button class="btn btn-outline" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">📁 我的项目</h1>
+            <button class="btn btn-outline" onclick="analyzeAllProjects()" id="btnAnalyzeAll">🤖 批量分析人群</button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">全部项目</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="draftCount">0</div>
+                <div class="stat-label">草稿</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="doneCount">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+        </div>
+
+        <div class="settings-card" id="watchSettingsCard">
+            <div class="settings-title">
+                📂 文件夹监控配置
+                <span class="status-badge off" id="watchStatusBadge">未监控</span>
+            </div>
+            <div class="settings-desc">
+                配置板子写入的 JSON 目录与图片目录。同一目录下两个 JSON 文件分工不同：
+                <strong>person_latest.json</strong> 提供 age/gender 用于广告匹配；
+                <strong>action_latest.json</strong> 提供 swipe_left / swipe_right 控制翻页。
+                保存后立即生效，无需重启服务。
+            </div>
+            <div class="settings-grid">
+                <div class="form-field full">
+                    <label for="watchPersonUrl">画像 JSON HTTP 地址</label>
+                    <input type="text" id="watchPersonUrl" placeholder="http://192.168.43.11:8000/output_results/backend_events/person_latest.json">
+                </div>
+                <div class="form-field full">
+                    <label for="watchActionUrl">动作 JSON HTTP 地址</label>
+                    <input type="text" id="watchActionUrl" placeholder="http://192.168.43.11:8000/output_results/backend_events/action_latest.json">
+                </div>
+                <div class="form-field full">
+                    <label for="watchPhotosDir">图片目录（绝对路径）</label>
+                    <input type="text" id="watchPhotosDir" placeholder="例如 C:\Users\xffff\Desktop\user\input_photos">
+                </div>
+                <div class="form-field">
+                    <label for="watchActionPollInterval">动作轮询间隔（毫秒）</label>
+                    <input type="number" id="watchActionPollInterval" placeholder="500" min="100" step="100">
+                </div>
+            </div>
+            <div class="settings-meta" id="watchConfigMeta"></div>
+            <div class="settings-actions">
+                <button class="btn btn-primary btn-sm" onclick="saveWatchConfig()">💾 保存并重启监控</button>
+                <button class="btn btn-outline btn-sm" onclick="triggerWatchScan()">🔍 立即扫描一次</button>
+            </div>
+        </div>
+
+        <div class="project-grid" id="projectGrid">
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">还没有项目，赶紧创建一个吧！</div>
+                <a href="/editor" class="btn btn-primary">➕ 新建项目</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-title">确认删除</div>
+            <div class="modal-text">删除后无法恢复，确定要删除项目 "<span id="deleteProjectName"></span>" 吗？</div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="showcaseModal">
+        <div class="modal" style="max-width:560px;">
+            <div class="modal-title">🎬 选择要展示的广告</div>
+            <div class="modal-text" style="margin-bottom:10px;">勾选要在展示屏中播放的广告项目，不勾选则展示全部。</div>
+            <div id="showcaseProjectList" style="max-height:340px;overflow-y:auto;margin-bottom:14px;border:1px solid #2a2a4a;border-radius:8px;background:#11122a;"></div>
+            <div style="display:flex;gap:8px;font-size:13px;color:#aaa;margin-bottom:14px;">
+                <label><input type="checkbox" id="showcaseSelectAll" checked> 全选</label>
+                <span style="flex:1;"></span>
+                <span id="showcaseCount"></span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeShowcaseModal()">取消</button>
+                <button class="btn btn-primary" style="background: linear-gradient(135deg, #00b894 0%, #00a085 100%);" onclick="startShowcase()">▶ 开始展示</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tagModal">
+        <div class="modal" style="max-width:480px;">
+            <div class="modal-title">🏷️ 编辑标签</div>
+            <div class="modal-text" style="margin-bottom:14px;">手动设置广告的人群标签，用于精准匹配展示。留空则不限制。</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-field">
+                    <label>产品名称</label>
+                    <input type="text" id="tagProduct" placeholder="如：运动鞋" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                </div>
+                <div class="form-field">
+                    <label>产品类别</label>
+                    <input type="text" id="tagCategory" placeholder="如：服装/食品/电子" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                </div>
+                <div class="form-field">
+                    <label>年龄段</label>
+                    <input type="text" id="tagAgeRange" placeholder="如：18-25岁" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                </div>
+                <div class="form-field">
+                    <label>性别</label>
+                    <select id="tagGender" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                        <option value="男女皆宜">男女皆宜</option>
+                        <option value="男性为主">男性为主</option>
+                        <option value="女性为主">女性为主</option>
+                    </select>
+                </div>
+                <div class="form-field" style="grid-column:1 / -1;">
+                    <label>目标人群</label>
+                    <input type="text" id="tagAudience" placeholder="如：都市白领、大学生" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                </div>
+                <div class="form-field" style="grid-column:1 / -1;">
+                    <label>广告风格</label>
+                    <input type="text" id="tagStyle" placeholder="如：简约、活泼、高端" style="padding:8px 12px;border:1px solid #2a2a4a;border-radius:8px;background:#0c0c1d;color:#e0e0e0;font-size:13px;font-family:inherit;">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeTagModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveTags()">💾 保存标签</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var deleteTargetId = null;
+        var allProjects = [];
+
+        function showToast(msg, isError) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2200);
+        }
+
+        function loadUserInfo() {
+            fetch('/api/auth/current')
+                .then(function(res) {
+                    if (res.status === 401) { window.location.href = '/login'; return; }
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data || !data.data) return;
+                    document.getElementById('userNickname').textContent = data.data.nickname || data.data.username;
+                    var initial = (data.data.nickname || data.data.username || 'U').charAt(0).toUpperCase();
+                    document.getElementById('userAvatar').textContent = initial;
+                });
+        }
+
+        function loadProjects() {
+            fetch('/api/ad/projects')
+                .then(function(res) {
+                    if (res.status === 401) { window.location.href = '/login'; return; }
+                    return res.json();
+                })
+                .then(function(data) {
+                    var grid = document.getElementById('projectGrid');
+                    var empty = document.getElementById('emptyState');
+                    if (!data || data.code !== 200 || !data.data || data.data.length === 0) {
+                        grid.innerHTML = '';
+                        grid.appendChild(empty);
+                        empty.style.display = '';
+                        updateStats(0, 0, 0);
+                        return;
+                    }
+
+                    var projects = data.data;
+                    allProjects = projects;
+                    updateStats(projects.length,
+                        projects.filter(function(p) { return p.status === 1; }).length,
+                        projects.filter(function(p) { return p.status === 2; }).length);
+
+                    grid.innerHTML = '';
+                    projects.forEach(function(project) {
+                        var card = createProjectCard(project);
+                        grid.appendChild(card);
+                    });
+                })
+                .catch(function() {
+                    showToast('加载项目列表失败', true);
+                });
+        }
+
+        function updateStats(total, draft, done) {
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('draftCount').textContent = draft;
+            document.getElementById('doneCount').textContent = done;
+        }
+
+        function createProjectCard(project) {
+            var card = document.createElement('div');
+            card.className = 'project-card';
+
+            var bgColor = project.backgroundColor || '#1a1a1a';
+            var statusLabel = project.status === 2 ? '已完成' : '草稿中';
+            var statusClass = project.status === 2 ? 'status-done' : 'status-draft';
+            var dateStr = project.updatedAt
+                ? new Date(project.updatedAt).toLocaleDateString('zh-CN')
+                : new Date(project.createdAt).toLocaleDateString('zh-CN');
+
+            card.innerHTML =
+                '<div class="card-preview">' +
+                '<div class="card-preview-canvas" style="background:' + bgColor + '; width:' +
+                (Math.min(project.canvasWidth || 800, 400) / 4) + 'px; height:' +
+                (Math.min(project.canvasHeight || 450, 300) / 4) + 'px;">' +
+                (project.canvasWidth || 800) + ' × ' + (project.canvasHeight || 450) +
+                '</div>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="card-title">' + (project.name || '未命名项目') + '</div>' +
+                '<div class="card-meta">' +
+                '<span>📐 ' + (project.canvasWidth || 800) + '×' + (project.canvasHeight || 450) + '</span>' +
+                '<span>📅 ' + dateStr + '</span>' +
+                '<span class="card-status ' + statusClass + '">' + statusLabel + '</span>' +
+                '</div>' +
+                buildTagsHtml(project) +
+                '<div class="card-actions">' +
+                '<a href="/project/' + project.id + '" class="btn btn-primary btn-sm">✏️ 编辑</a>' +
+                '<button class="btn btn-outline btn-sm" onclick="previewProject(' + project.id + ')">👁 预览</button>' +
+                '<button class="btn btn-outline btn-sm" onclick="openTagModal(' + project.id + ')" style="color:#00b894;border-color:rgba(0,184,148,0.4)">🏷️ 标签</button>' +
+                '<button class="btn btn-outline btn-sm" onclick="analyzeAudience(' + project.id + ', this)" style="color:#a29bfe;border-color:rgba(108,92,231,0.4)">🤖 分析人群</button>' +
+                '<button class="btn btn-danger btn-sm" onclick="openDeleteModal(' + project.id + ', \'' +
+                (project.name || '未命名项目').replace(/'/g, "\\'") + '\')">🗑 删除</button>' +
+                '</div>' +
+                '</div>';
+
+            return card;
+        }
+
+        function previewProject(projectId) {
+            window.open('/preview?projectId=' + projectId, '_blank');
+        }
+
+        function openDeleteModal(id, name) {
+            deleteTargetId = id;
+            document.getElementById('deleteProjectName').textContent = name;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            deleteTargetId = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        function confirmDelete() {
+            if (!deleteTargetId) return;
+            var id = deleteTargetId;
+            closeDeleteModal();
+            fetch('/api/ad/project/' + id, { method: 'DELETE' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.code === 200) {
+                        showToast('✅ 项目已删除');
+                        loadProjects();
+                    } else {
+                        showToast('❌ 删除失败', true);
+                    }
+                })
+                .catch(function() { showToast('❌ 网络错误', true); });
+        }
+
+        function buildTagsHtml(project) {
+            if (!project.aiTags) {
+                return '<div class="card-tags"><span class="card-tags-loading" id="tags-' + project.id + '">📋 点击"分析人群"获取标签</span></div>';
+            }
+            try {
+                var tags = typeof project.aiTags === 'string' ? JSON.parse(project.aiTags) : project.aiTags;
+                var parts = [];
+                if (tags.product)   parts.push('<span class="tag-item tag-product">📦 ' + tags.product + '</span>');
+                if (tags.category)  parts.push('<span class="tag-item tag-category">🏷️ ' + tags.category + '</span>');
+                if (tags.ageRange)  parts.push('<span class="tag-item tag-age">🎂 ' + tags.ageRange + '</span>');
+                if (tags.gender)    parts.push('<span class="tag-item tag-gender">🧑‍🤝‍🧑 ' + tags.gender + '</span>');
+                if (tags.audience)  parts.push('<span class="tag-item tag-audience">👥 ' + tags.audience + '</span>');
+                if (tags.style)     parts.push('<span class="tag-item tag-style">✨ ' + tags.style + '</span>');
+                if (parts.length === 0) {
+                    return '<div class="card-tags"><span class="card-tags-loading" id="tags-' + project.id + '">📋 点击"分析人群"获取标签</span></div>';
+                }
+                return '<div class="card-tags" id="tags-' + project.id + '">' + parts.join('') + '</div>';
+            } catch (e) {
+                return '<div class="card-tags"><span class="card-tags-loading" id="tags-' + project.id + '">📋 点击"分析人群"获取标签</span></div>';
+            }
+        }
+
+        function analyzeAudience(projectId, btnEl) {
+            var tagsDiv = document.getElementById('tags-' + projectId);
+            if (tagsDiv) {
+                tagsDiv.innerHTML = '<span class="card-tags-loading">🤖 AI 正在分析人群...</span>';
+            }
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = '⏳ 分析中...';
+            }
+            fetch('/api/ad/project/' + projectId + '/analyze-audience', { method: 'POST' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.code === 200 && data.data) {
+                        showToast('✅ 人群分析完成');
+                        loadProjects();
+                    } else {
+                        showToast('❌ 分析失败', true);
+                        if (tagsDiv) tagsDiv.innerHTML = '<span class="card-tags-loading">分析失败，请重试</span>';
+                    }
+                    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🤖 分析人群'; }
+                })
+                .catch(function() {
+                    showToast('❌ 网络错误', true);
+                    if (tagsDiv) tagsDiv.innerHTML = '<span class="card-tags-loading">分析失败，请重试</span>';
+                    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🤖 分析人群'; }
+                });
+        }
+
+        var tagEditProjectId = null;
+
+        function openTagModal(projectId) {
+            tagEditProjectId = projectId;
+            fetch('/api/ad/project/' + projectId + '/tags')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var tags = {};
+                    if (data && data.code === 200 && data.data) {
+                        try {
+                            tags = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                        } catch (e) { tags = {}; }
+                    }
+                    document.getElementById('tagProduct').value = tags.product || '';
+                    document.getElementById('tagCategory').value = tags.category || '';
+                    document.getElementById('tagAgeRange').value = tags.ageRange || '';
+                    document.getElementById('tagGender').value = tags.gender || '男女皆宜';
+                    document.getElementById('tagAudience').value = tags.audience || '';
+                    document.getElementById('tagStyle').value = tags.style || '';
+                    document.getElementById('tagModal').classList.add('active');
+                })
+                .catch(function() {
+                    showToast('❌ 获取标签失败', true);
+                });
+        }
+
+        function closeTagModal() {
+            tagEditProjectId = null;
+            document.getElementById('tagModal').classList.remove('active');
+        }
+
+        function saveTags() {
+            if (!tagEditProjectId) return;
+            var tags = {
+                product: document.getElementById('tagProduct').value.trim(),
+                category: document.getElementById('tagCategory').value.trim(),
+                ageRange: document.getElementById('tagAgeRange').value.trim(),
+                gender: document.getElementById('tagGender').value,
+                audience: document.getElementById('tagAudience').value.trim(),
+                style: document.getElementById('tagStyle').value.trim()
+            };
+            fetch('/api/ad/project/' + tagEditProjectId + '/tags', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tags: JSON.stringify(tags) })
+            })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.code === 200) {
+                        showToast('✅ 标签保存成功');
+                        closeTagModal();
+                        loadProjects();
+                    } else {
+                        showToast('❌ 保存失败：' + (data.msg || '未知错误'), true);
+                    }
+                })
+                .catch(function() {
+                    showToast('❌ 网络错误', true);
+                });
+        }
+
+        function analyzeAllProjects() {
+            var btn = document.getElementById('btnAnalyzeAll');
+            btn.disabled = true;
+            btn.textContent = '⏳ 批量分析中...';
+            fetch('/api/ad/projects')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (!data || data.code !== 200 || !data.data || data.data.length === 0) {
+                        showToast('没有可分析的项目', true);
+                        btn.disabled = false;
+                        btn.textContent = '🤖 批量分析人群';
+                        return;
+                    }
+                    var projects = data.data;
+                    var i = 0;
+                    function next() {
+                        if (i >= projects.length) {
+                            btn.disabled = false;
+                            btn.textContent = '🤖 批量分析人群';
+                            showToast('✅ 全部项目分析完成');
+                            loadProjects();
+                            return;
+                        }
+                        btn.textContent = '⏳ 分析中 (' + (i + 1) + '/' + projects.length + ')...';
+                        fetch('/api/ad/project/' + projects[i].id + '/analyze-audience', { method: 'POST' })
+                            .then(function() { i++; next(); })
+                            .catch(function() { i++; next(); });
+                    }
+                    next();
+                })
+                .catch(function() {
+                    showToast('❌ 获取项目列表失败', true);
+                    btn.disabled = false;
+                    btn.textContent = '🤖 批量分析人群';
+                });
+        }
+
+        function openShowcaseModal() {
+            var modal = document.getElementById('showcaseModal');
+            var list = document.getElementById('showcaseProjectList');
+            if (allProjects.length === 0) {
+                showToast('还没有广告项目，请先创建', true);
+                return;
+            }
+            list.innerHTML = '';
+            allProjects.forEach(function(p, idx) {
+                var label = document.createElement('label');
+                label.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #1f203a;' + (idx === allProjects.length - 1 ? '' : '');
+                label.onmouseover = function(){ label.style.background = '#1a1b35'; };
+                label.onmouseout  = function(){ label.style.background = ''; };
+                var check = document.createElement('input');
+                check.type = 'checkbox';
+                check.value = p.id;
+                check.checked = true;
+                check.style.cssText = 'width:16px;height:16px;cursor:pointer;';
+                var info = document.createElement('div');
+                info.style.cssText = 'flex:1;min-width:0;';
+                info.innerHTML = '<div style="color:#fff;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📢 ' + (p.name || '未命名') + '</div>' +
+                                 '<div style="color:#7f8c8d;font-size:12px;">' + (p.pages ? p.pages.length : 0) + '页 · ' + (p.canvasWidth||800) + '×' + (p.canvasHeight||450) + (p.aiTags ? ' · AI已分析' : '') + '</div>';
+                label.appendChild(check);
+                label.appendChild(info);
+                list.appendChild(label);
+            });
+            bindSelectAll();
+            updateShowcaseCount();
+            modal.classList.add('active');
+        }
+
+        function bindSelectAll() {
+            var list = document.getElementById('showcaseProjectList');
+            var selectAll = document.getElementById('showcaseSelectAll');
+            selectAll.checked = true;
+            selectAll.onchange = function() {
+                var cbs = list.querySelectorAll('input[type=checkbox]');
+                cbs.forEach(function(c){ c.checked = selectAll.checked; });
+                updateShowcaseCount();
+            };
+            list.addEventListener('change', function(e) {
+                if (e.target && e.target.type === 'checkbox' && e.target !== selectAll) {
+                    var cbs = list.querySelectorAll('input[type=checkbox]');
+                    var total = cbs.length;
+                    var checked = 0;
+                    cbs.forEach(function(c){ if (c.checked) checked++; });
+                    selectAll.checked = (checked === total);
+                    updateShowcaseCount();
+                }
+            });
+        }
+
+        function updateShowcaseCount() {
+            var list = document.getElementById('showcaseProjectList');
+            var cbs = list.querySelectorAll('input[type=checkbox]');
+            var checked = 0;
+            cbs.forEach(function(c){ if (c.checked) checked++; });
+            document.getElementById('showcaseCount').textContent = '已选 ' + checked + ' / ' + cbs.length + ' 个';
+        }
+
+        function closeShowcaseModal() {
+            document.getElementById('showcaseModal').classList.remove('active');
+        }
+
+        function startShowcase() {
+            var list = document.getElementById('showcaseProjectList');
+            var cbs = list.querySelectorAll('input[type=checkbox]:checked');
+            if (cbs.length === 0) {
+                showToast('请至少选择一个广告', true);
+                return;
+            }
+            var ids = [];
+            cbs.forEach(function(c){ ids.push(c.value); });
+            var url = '/showcase?ids=' + ids.join(',');
+            window.open(url, '_blank');
+            closeShowcaseModal();
+        }
+
+        function logout() {
+            fetch('/api/auth/logout')
+                .then(function() { window.location.href = '/login'; });
+        }
+
+        function loadWatchConfig() {
+            fetch('/api/watch/config')
+                .then(function(res) {
+                    if (res.status === 401) { window.location.href = '/login'; return; }
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data || data.code !== 200 || !data.data) return;
+                    var cfg = data.data;
+                    document.getElementById('watchPersonUrl').value = cfg.personUrl || '';
+                    document.getElementById('watchActionUrl').value = cfg.actionUrl || '';
+                    document.getElementById('watchPhotosDir').value = cfg.photosDir || '';
+                    document.getElementById('watchActionPollInterval').value = cfg.actionPollInterval || 500;
+
+                    var badge = document.getElementById('watchStatusBadge');
+                    if (cfg.watching) {
+                        badge.textContent = '监控中';
+                        badge.className = 'status-badge on';
+                    } else {
+                        badge.textContent = '未监控';
+                        badge.className = 'status-badge off';
+                    }
+
+                    var meta = document.getElementById('watchConfigMeta');
+                    meta.innerHTML =
+                        '画像 URL：<code>' + (cfg.personUrl || '-') + '</code><br>' +
+                        '动作 URL：<code>' + (cfg.actionUrl || '-') + '</code><br>' +
+                        '实际图片目录：<code>' + (cfg.photosDirResolved || '-') + '</code>' +
+                        (cfg.photosDirExists ? ' ✓' : ' ✗ 不存在') + '<br>' +
+                        '配置文件：<code>' + (cfg.configFile || '-') + '</code>';
+                })
+                .catch(function() {
+                    showToast('加载监控配置失败', true);
+                });
+        }
+
+        function saveWatchConfig() {
+            var personUrl = document.getElementById('watchPersonUrl').value.trim();
+            var actionUrl = document.getElementById('watchActionUrl').value.trim();
+            var photosDir = document.getElementById('watchPhotosDir').value.trim();
+            var actionPollInterval = document.getElementById('watchActionPollInterval').value.trim();
+            if (!personUrl || !actionUrl || !photosDir) {
+                showToast('请填写画像 URL、动作 URL 和图片目录', true);
+                return;
+            }
+            fetch('/api/watch/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ personUrl: personUrl, actionUrl: actionUrl, photosDir: photosDir, actionPollInterval: actionPollInterval })
+            })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (!data || data.code !== 200) {
+                        showToast(data && data.message ? data.message : '保存失败', true);
+                        return;
+                    }
+                    showToast('✅ 监控目录已保存并重启');
+                    loadWatchConfig();
+                })
+                .catch(function() {
+                    showToast('保存配置失败', true);
+                });
+        }
+
+        function triggerWatchScan() {
+            fetch('/api/watch/scan', { method: 'POST' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.code === 200) {
+                        showToast('✅ 已触发扫描');
+                    } else {
+                        showToast('扫描失败', true);
+                    }
+                })
+                .catch(function() {
+                    showToast('扫描失败', true);
+                });
+        }
+
+        loadUserInfo();
+        loadProjects();
+        loadWatchConfig();
+    </script>
+</body>
+</html>

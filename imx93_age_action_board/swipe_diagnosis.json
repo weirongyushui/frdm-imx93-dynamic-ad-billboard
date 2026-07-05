@@ -1,0 +1,59 @@
+{
+  "camera": "/dev/video2",
+  "capture": {
+    "requested_width": 640,
+    "requested_height": 480,
+    "requested_fps": 15.0,
+    "actual_width": 640,
+    "actual_height": 480,
+    "reported_fps": 15.0,
+    "frames_read": 294,
+    "read_failures": 0
+  },
+  "inference": {
+    "count": 294,
+    "average_fps": 14.651,
+    "average_ms": 48.052
+  },
+  "thresholds": {
+    "min_keypoint_score": 0.25,
+    "min_valid_points": 5,
+    "track_window_seconds": 0.9
+  },
+  "keypoint_scores": {
+    "average": {
+      "LS": 0.3176,
+      "RS": 0.3511,
+      "LE": 0.1714,
+      "RE": 0.3181,
+      "LW": 0.2264,
+      "RW": 0.2551
+    },
+    "maximum": {
+      "LS": 0.635,
+      "RS": 0.803,
+      "LE": 0.4998,
+      "RE": 0.844,
+      "LW": 0.635,
+      "RW": 0.803
+    }
+  },
+  "visited_states": [
+    "READY",
+    "TRACKING",
+    "WAIT_RELEASE"
+  ],
+  "actions": [
+    {
+      "timestamp_seconds": 13.59,
+      "action": "swipe_left",
+      "image_action": "swipe_right",
+      "wrist": "right_wrist",
+      "horizontal_distance_shoulder_widths": 1.0574,
+      "vertical_distance_shoulder_widths": 0.192,
+      "direction_consistency": 1.0,
+      "segment_duration_seconds": 0.365,
+      "segment_points": 5
+    }
+  ]
+}

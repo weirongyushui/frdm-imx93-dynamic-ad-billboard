@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.AdLayerMapper">
+
+    <resultMap id="layerMap" type="sia.advertisement.entity.AdLayer">
+        <id property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="pageId" column="page_id"/>
+        <result property="layerName" column="layer_name"/>
+        <result property="layerType" column="layer_type"/>
+        <result property="zIndex" column="z_index"/>
+        <result property="posX" column="pos_x"/>
+        <result property="posY" column="pos_y"/>
+        <result property="width" column="width"/>
+        <result property="height" column="height"/>
+        <result property="textContent" column="text_content"/>
+        <result property="fontSize" column="font_size"/>
+        <result property="fontColor" column="font_color"/>
+        <result property="fontWeight" column="font_weight"/>
+        <result property="fontFamily" column="font_family"/>
+        <result property="fontStyle" column="font_style"/>
+        <result property="textDecoration" column="text_decoration"/>
+        <result property="lineHeight" column="line_height"/>
+        <result property="letterSpacing" column="letter_spacing"/>
+        <result property="opacity" column="opacity"/>
+        <result property="textAlign" column="text_align"/>
+        <result property="borderRadius" column="border_radius"/>
+        <result property="background" column="`background`"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        id, project_id, page_id, layer_name, layer_type, z_index,
+        pos_x, pos_y, width, height,
+        text_content, font_size, font_color, font_weight,
+        font_family, font_style, text_decoration, line_height, letter_spacing, opacity,
+        text_align, border_radius, `background`, image_url,
+        sort_order, created_at, updated_at
+    </sql>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.AdLayer"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ad_layer (project_id, page_id, layer_name, layer_type, z_index,
+                              pos_x, pos_y, width, height,
+                              text_content, font_size, font_color, font_weight,
+                              font_family, font_style, text_decoration, line_height, letter_spacing, opacity,
+                              text_align, border_radius, `background`, image_url,
+                              sort_order)
+        VALUES (#{projectId}, #{pageId}, #{layerName}, #{layerType}, #{zIndex},
+                #{posX}, #{posY}, #{width}, #{height},
+                #{textContent}, #{fontSize}, #{fontColor}, #{fontWeight},
+                #{fontFamily}, #{fontStyle}, #{textDecoration}, #{lineHeight}, #{letterSpacing}, #{opacity},
+                #{textAlign}, #{borderRadius}, #{background}, #{imageUrl},
+                #{sortOrder})
+    </insert>
+
+    <update id="update" parameterType="sia.advertisement.entity.AdLayer">
+        UPDATE ad_layer
+        SET layer_name   = #{layerName},
+            layer_type   = #{layerType},
+            z_index      = #{zIndex},
+            pos_x        = #{posX},
+            pos_y        = #{posY},
+            width        = #{width},
+            height       = #{height},
+            text_content = #{textContent},
+            font_size    = #{fontSize},
+            font_color   = #{fontColor},
+            font_weight  = #{fontWeight},
+            font_family  = #{fontFamily},
+            font_style  = #{fontStyle},
+            text_decoration = #{textDecoration},
+            line_height = #{lineHeight},
+            letter_spacing = #{letterSpacing},
+            opacity = #{opacity},
+            text_align   = #{textAlign},
+            border_radius = #{borderRadius},
+            `background` = #{background},
+            image_url    = #{imageUrl},
+            sort_order   = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="layerMap">
+        SELECT <include refid="baseColumns"/> FROM ad_layer WHERE id = #{id}
+    </select>
+
+    <select id="selectByProjectId" resultMap="layerMap">
+        SELECT <include refid="baseColumns"/> FROM ad_layer
+        WHERE project_id = #{projectId}
+        ORDER BY z_index ASC, sort_order ASC
+    </select>
+
+    <select id="selectByProjectIdAndType" resultMap="layerMap">
+        SELECT <include refid="baseColumns"/> FROM ad_layer
+        WHERE project_id = #{projectId} AND layer_type = #{layerType}
+        ORDER BY z_index ASC, sort_order ASC
+    </select>
+
+    <select id="selectByPageId" resultMap="layerMap">
+        SELECT <include refid="baseColumns"/> FROM ad_layer
+        WHERE page_id = #{pageId}
+        ORDER BY z_index ASC, sort_order ASC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM ad_layer WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByProjectId">
+        DELETE FROM ad_layer WHERE project_id = #{projectId}
+    </delete>
+
+    <delete id="deleteByPageId">
+        DELETE FROM ad_layer WHERE page_id = #{pageId}
+    </delete>
+
+</mapper>

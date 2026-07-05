@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.FaceEncodingMapper">
+
+    <resultMap id="faceMap" type="sia.advertisement.entity.FaceEncoding">
+        <id     property="id"             column="id"/>
+        <result property="userId"         column="user_id"/>
+        <result property="faceVector"     column="face_vector"/>
+        <result property="photoSampleUrl" column="photo_sample_url"/>
+        <result property="firstSeen"      column="first_seen"/>
+        <result property="lastSeen"       column="last_seen"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.FaceEncoding"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO face_encodings (user_id, face_vector, photo_sample_url, first_seen, last_seen)
+        VALUES (#{userId}, #{faceVector}, #{photoSampleUrl}, #{firstSeen}, #{lastSeen})
+    </insert>
+
+    <select id="selectAll" resultMap="faceMap">
+        SELECT * FROM face_encodings ORDER BY last_seen DESC
+    </select>
+
+    <update id="updateLastSeen">
+        UPDATE face_encodings SET last_seen = NOW() WHERE id = #{id}
+    </update>
+
+</mapper>

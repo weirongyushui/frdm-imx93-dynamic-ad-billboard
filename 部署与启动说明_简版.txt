@@ -1,0 +1,346 @@
+部署与启动说明（简版）
+
+项目名称：
+基于FRDM-IMX93的动态公告牌，实现高质量路面广告投送
+
+一、项目组成
+
+本项目主要分为五部分：
+
+1. Windows 后端
+   运行 Spring Boot 后端服务，负责广告管理、广告匹配、用户画像、AI广告助手等功能。
+
+2. MySQL 数据库
+   保存广告项目、广告图层、用户画像、曝光记录、反馈记录等数据。
+
+3. FRDM-IMX93 板端
+   负责摄像头采集、人脸抓拍、年龄性别识别、动作识别，并将识别结果通过 HTTP 推送到电脑端。
+
+4. 前端页面
+   包括广告展示页面、广告编辑页面、项目管理页面。
+
+5. AI广告助手
+   用户输入一句话后，可以辅助生成广告标题、文案、按钮文字、受众标签和投放建议。
+   注意：广告图片素材需要用户手动上传或选择。
+
+
+二、Windows 端启动
+
+1. 进入项目目录
+
+cd "C:\Users\13718\OneDrive\Desktop\adv\test\advertisement"
+
+2. 启动 MySQL
+
+确保 MySQL 已经启动，并且已经导入 advertisement.sql 数据库文件。
+
+如果还没有导入数据库，可以先创建数据库：
+
+CREATE DATABASE advertisement DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+然后在 PowerShell 中导入：
+
+mysql -u root -p advertisement < advertisement.sql
+
+3. 检查后端配置文件
+
+配置文件位置：
+
+src/main/resources/application.properties
+
+主要检查：
+
+server.port=8083
+spring.datasource.url=jdbc:mysql://localhost:3306/advertisement
+spring.datasource.username=root
+spring.datasource.password=你的MySQL密码
+
+如果要使用 AI广告助手，还需要配置 AI 接口：
+
+ai.api.key=你的API_KEY
+ai.api.url=你的AI接口地址
+ai.api.model=deepseek-chat
+
+注意：不要把真实 API Key 上传到 GitHub。
+
+4. 启动 Spring Boot 后端
+
+在项目根目录执行：
+
+mvn spring-boot:run
+
+看到类似：
+
+Tomcat started on port 8083
+Started AdvertisementApplication
+
+说明后端启动成功。
+
+后端地址：
+
+http://localhost:8083
+
+
+三、Python HTTP 接收脚本启动
+
+如果板端使用 /person、/action、/face 推送方式，可以启动 Python 接收脚本。
+
+进入目录：
+
+cd "C:\Users\13718\OneDrive\Desktop\adv\test\advertisement\http"
+
+启动：
+
+python local_8000_receiver_with_face.py
+
+它会监听：
+
+http://0.0.0.0:8000/person
+http://0.0.0.0:8000/action
+http://0.0.0.0:8000/face
+
+作用：
+
+/person  接收年龄性别 JSON
+/action  接收动作 JSON
+/face    接收最新一张人脸图片
+
+收到的人脸图片一般会保存到：
+
+received_faces/latest_face.jpg
+
+
+四、FRDM-IMX93 板端启动
+
+1. 进入板端目录
+
+cd /root/imx93_age_action_board
+
+2. 检查 Windows 电脑 IP
+
+执行：
+
+grep -n "PC_IP\|FACE_DIR" run_http_json_push.sh
+
+正常会看到类似：
+
+PC_IP="192.168.43.221"
+FACE_DIR="/root/imx93_age_action_board/input_photos"
+
+其中 PC_IP 必须改成 Windows 电脑的局域网 IP。
+
+如果要修改 IP，执行：
+
+sed -i 's/^PC_IP=.*/PC_IP="你的Windows电脑IP"/' run_http_json_push.sh
+
+例如：
+
+sed -i 's/^PC_IP=.*/PC_IP="192.168.43.221"/' run_http_json_push.sh
+
+3. 板端一键启动命令
+
+Windows 后端和 Python 接收脚本先启动后，再在板子上执行：
+
+cd /root/imx93_age_action_board && \
+chmod +x run_http_json_push.sh run_board.sh cleanup_input_photos.py && \
+pkill -f http_json_push.py 2>/dev/null ; \
+pkill -f cleanup_input_photos.py 2>/dev/null ; \
+./cleanup_input_photos.py --dir /root/imx93_age_action_board/input_photos --max-gb 5 --target-gb 4.5 --interval 60 > image_cleaner.log 2>&1 & \
+./run_http_json_push.sh > http_json_push.log 2>&1 & \
+./run_board.sh
+
+这个命令会启动三个功能：
+
+1. run_board.sh
+   启动板端识别主程序，负责人脸抓拍、年龄性别识别、动作识别。
+
+2. run_http_json_push.sh
+   启动 HTTP 推送程序，负责推送 person、action、face。
+
+3. cleanup_input_photos.py
+   启动图片自动清理程序，图片超过 5GB 后自动删除旧图片，清理到约 4.5GB。
+
+
+五、前端页面访问
+
+后端启动成功后，浏览器访问：
+
+1. 广告展示页面
+
+http://localhost:8083/showcase
+
+如果用其他设备访问，把 localhost 换成 Windows 电脑 IP，例如：
+
+http://192.168.43.221:8083/showcase
+
+2. 广告编辑页面
+
+http://localhost:8083/try
+
+用于编辑广告、上传图片、使用 AI广告助手。
+
+3. 项目管理页面
+
+http://localhost:8083/vault
+
+用于管理广告项目、查看项目列表、进行人群标签配置。
+
+
+六、AI广告助手使用
+
+打开广告编辑页面：
+
+http://localhost:8083/try
+
+点击 AI助手，输入一句话，例如：
+
+帮我生成一个适合年轻人的运动鞋广告
+
+AI广告助手可以生成：
+
+广告标题
+副标题
+正文文案
+按钮文字
+受众标签
+投放建议
+版式布局建议
+
+注意：
+
+AI助手不直接自动生成商品图片。
+广告图片需要用户手动上传或从本地选择。
+
+
+七、启动成功检查
+
+1. 检查板端识别程序
+
+板端看到类似内容说明正常：
+
+i.MX93人脸年龄性别与动作识别
+年龄性别图片监控已经就绪
+动作识别程序
+MoveNet解释器和模型加载成功
+摄像头：/dev/video2
+
+2. 检查 HTTP 推送日志
+
+板端执行：
+
+tail -n 100 /root/imx93_age_action_board/http_json_push.log
+
+正常应该看到：
+
+person POST
+action POST
+face POST
+
+拍到人脸后应看到：
+
+[face] POST OK
+[person] POST OK
+
+识别到动作后应看到：
+
+[action] POST OK
+
+3. 检查图片清理日志
+
+tail -n 50 /root/imx93_age_action_board/image_cleaner.log
+
+正常应该看到：
+
+i.MX93 face image cleaner started
+max size: 5.0 GB
+target size after cleanup: 4.5 GB
+
+
+八、正常演示流程
+
+1. Windows 启动 MySQL
+2. Windows 启动 Spring Boot 后端
+3. Windows 启动 local_8000_receiver_with_face.py
+4. 板端执行一键启动命令
+5. 浏览器打开 showcase 展示页面
+6. 用户站到摄像头前，系统自动识别人群并切换广告
+7. 用户左右挥手，展示屏切换广告
+8. 打开 try 页面，演示 AI广告助手一条指令生成广告
+
+
+九、停止项目
+
+1. 停止板端主程序
+
+在板端运行窗口按：
+
+Ctrl + C
+
+如果后台程序还在运行，执行：
+
+pkill -f http_json_push.py
+pkill -f cleanup_input_photos.py
+pkill -f 19_swipe_runtime_video_camera.py
+pkill -f main.py
+
+2. 停止 Windows 后端
+
+在 Spring Boot 运行窗口按：
+
+Ctrl + C
+
+3. 停止 Python 接收脚本
+
+在 Python 接收脚本窗口按：
+
+Ctrl + C
+
+
+十、常见问题
+
+1. 板端没有推送数据
+
+检查 Windows IP：
+
+grep -n "PC_IP" /root/imx93_age_action_board/run_http_json_push.sh
+
+检查 Windows 防火墙是否放行 8000 和 8083 端口。
+
+2. 没有人脸图片上传
+
+检查板端是否生成图片：
+
+ls -lh /root/imx93_age_action_board/input_photos | tail
+
+检查推送日志：
+
+tail -n 100 /root/imx93_age_action_board/http_json_push.log
+
+3. 广告不切换
+
+检查展示页面：
+
+http://localhost:8083/showcase
+
+检查动作接口：
+
+http://localhost:8083/api/action/last
+
+4. AI广告助手不能用
+
+检查 application.properties 中的 AI 配置：
+
+ai.api.key=你的API_KEY
+ai.api.url=你的AI接口地址
+ai.api.model=deepseek-chat
+
+如果没有配置 API Key，核心广告投放功能仍然可以运行，但 AI广告助手不能使用。
+
+
+十一、注意事项
+
+1. 正式演示时，Windows 后端要先启动，板端再启动。
+2. run_http_json_push.sh 里的 PC_IP 必须是 Windows 电脑 IP。
+3. 不要把真实 API Key、数据库密码上传到 GitHub。
+4. 板端正式运行使用 CPU 稳定方案，不写 NPU 测试内容。
+5. 图片清理程序建议一直后台运行，防止 input_photos 目录占满空间。

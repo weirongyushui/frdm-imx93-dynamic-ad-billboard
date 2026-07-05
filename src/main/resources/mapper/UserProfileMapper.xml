@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.UserProfileMapper">
+
+    <resultMap id="profileMap" type="sia.advertisement.entity.UserProfile">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="ageRange" column="age_range"/>
+        <result property="gender" column="gender"/>
+        <result property="matchedAdIds" column="matched_ad_ids"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="profileMap">
+        SELECT * FROM user_profile WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.UserProfile"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_profile (user_id, age_range, gender, matched_ad_ids)
+        VALUES (#{userId}, #{ageRange}, #{gender}, #{matchedAdIds})
+    </insert>
+
+    <update id="update" parameterType="sia.advertisement.entity.UserProfile">
+        UPDATE user_profile
+        SET age_range     = #{ageRange},
+            gender        = #{gender},
+            matched_ad_ids = #{matchedAdIds}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

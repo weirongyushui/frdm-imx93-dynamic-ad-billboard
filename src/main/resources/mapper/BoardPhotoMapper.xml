@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.BoardPhotoMapper">
+
+    <resultMap id="photoMap" type="sia.advertisement.entity.BoardPhoto">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="photoPath" column="photo_path"/>
+        <result property="status" column="status"/>
+        <result property="portraitJson" column="portrait_json"/>
+        <result property="matchedJson" column="matched_json"/>
+        <result property="matchedAdIds" column="matched_ad_ids"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="analyzedAt" column="analyzed_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.BoardPhoto"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO board_photo (user_id, photo_url, photo_path, status)
+        VALUES (#{userId}, #{photoUrl}, #{photoPath}, #{status})
+    </insert>
+
+    <select id="selectById" resultMap="photoMap">
+        SELECT * FROM board_photo WHERE id = #{id}
+    </select>
+
+    <update id="updateAnalysisResult">
+        UPDATE board_photo
+        SET status         = #{status},
+            portrait_json  = #{portraitJson},
+            matched_json   = #{matchedJson},
+            matched_ad_ids = #{matchedAdIds},
+            analyzed_at    = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

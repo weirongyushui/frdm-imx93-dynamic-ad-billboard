@@ -1,0 +1,57 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Runtime / build output
+target/
+.idea/
+.vscode/
+*.log
+*.tmp
+*.bak
+*.bak_npu
+__pycache__/
+*.pyc
+
+# Board runtime output
+imx93_age_action_board/input_photos/
+imx93_age_action_board/output_results/
+imx93_age_action_board/received_faces/
+imx93_age_action_board/pretrained_models/output/
+
+# Local photos
+photo/
+
+# Core dumps
+core
+core.*

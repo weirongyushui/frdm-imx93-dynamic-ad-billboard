@@ -1,0 +1,456 @@
+﻿i.MX93 年龄、性别与手势识别项目使用说明
+============================================================
+
+一、项目功能
+------------------------------------------------------------
+
+本项目分为两类独立识别任务：
+
+1. 图片识别
+   - 输入：input_photos 文件夹中的新图片
+   - 输出：年龄 age、性别 gender
+   - 用途：后端根据用户年龄和性别切换对应广告
+
+2. 动作识别
+   - 电脑测试输入：input_videos 文件夹中的新视频
+   - 板端正式输入：摄像头 /dev/video0
+   - 当前支持：
+     - swipe_left
+     - swipe_right
+   - 用途：用户控制广告内容左右切换
+
+年龄性别事件和动作事件分开输出，不会合并成一个固定结果。
+
+
+二、项目目录
+------------------------------------------------------------
+
+项目根目录应包含：
+
+imx93_age_gender_pycharm
+├─ app.py
+├─ main.py
+├─ 19_swipe_runtime_video_camera.py
+├─ requirements.txt
+├─ 启动项目.bat
+├─ 使用说明.txt
+│
+├─ pretrained_models
+│  ├─ genderage.onnx
+│  └─ movenet_lightning_int8.tflite
+│
+├─ input_photos
+├─ input_videos
+├─ processed_photos
+├─ processed_videos
+├─ failed_photos
+├─ failed_videos
+└─ output_results
+
+重要：
+
+- app.py 是总程序
+- main.py 负责图片年龄性别识别
+- 19_swipe_runtime_video_camera.py 负责动作识别
+- 不要修改或删除这三个文件名
+- .venv 是 Windows 本地环境，不能复制到 i.MX93 板子上使用
+
+
+三、Windows 电脑端使用
+------------------------------------------------------------
+
+1. 打开 PowerShell
+
+进入项目目录，例如：
+
+cd C:\Users\13718\OneDrive\Desktop\ageandface\imx93_age_gender_pycharm
+
+2. 激活虚拟环境
+
+.\.venv\Scripts\Activate.ps1
+
+成功后终端前面会出现：
+
+(.venv)
+
+3. 启动整个项目
+
+python app.py
+
+也可以双击：
+
+启动项目.bat
+
+4. 图片识别测试
+
+项目启动后，再把一张新的人物照片拖入：
+
+input_photos
+
+注意：
+
+- 必须在 app.py 启动后再拖入
+- 图片中应有清晰、正面、面积较大的人脸
+- 每张图片只选择面积最大的人脸
+- 每张图片只输出一个年龄和一个性别
+
+识别成功后，原图会自动移动到：
+
+processed_photos
+
+识别失败会移动到：
+
+failed_photos
+
+5. 视频动作测试
+
+项目启动后，再把一个新视频拖入：
+
+input_videos
+
+程序会：
+
+- 等待视频复制完成
+- 后台高速扫描完整视频
+- 不弹出视频播放窗口
+- 不生成标注视频
+- 扫描完成后输出动作结果
+
+处理成功后，视频会自动移动到：
+
+processed_videos
+
+处理失败会移动到：
+
+failed_videos
+
+6. 停止项目
+
+在运行窗口中按：
+
+Ctrl + C
+
+
+四、事件输出
+------------------------------------------------------------
+
+事件输出目录：
+
+output_results\backend_events
+
+1. 最新用户信息
+
+output_results\backend_events\person_latest.json
+
+示例：
+
+{
+  "event_type": "person",
+  "session_id": "20260630_232335_151128",
+  "timestamp": "2026-06-30T23:23:35.151+08:00",
+  "age": 24,
+  "gender": "male"
+}
+
+2. 用户信息流水
+
+output_results\backend_events\person_events.jsonl
+
+每识别一位新用户，追加一行，不会覆盖历史记录。
+
+3. 最新动作
+
+output_results\backend_events\action_latest.json
+
+示例：
+
+{
+  "event_type": "action",
+  "session_id": "20260630_232335_151128",
+  "sequence": 2,
+  "timestamp": "2026-06-30T23:25:05.473+08:00",
+  "action": "swipe_right"
+}
+
+4. 动作流水
+
+output_results\backend_events\action_events.jsonl
+
+每次动作都会追加一行。
+
+同一个用户示例：
+
+sequence=1 action=swipe_left
+sequence=2 action=swipe_right
+sequence=3 action=swipe_left
+
+说明：
+
+- session_id 用于关联用户和他的动作
+- 新图片识别成功后会创建新的 session_id
+- 新用户的动作 sequence 会重新从 1 开始
+- 后续新增动作名称时，动作事件结构不需要改变
+
+
+五、电脑端测试通过标准
+------------------------------------------------------------
+
+测试成功时，终端应出现类似：
+
+[用户事件] session_id=... age=24 gender=male
+
+[完整视频扫描完成] 最终动作=swipe_left
+
+[动作事件] session_id=... sequence=1 action=swipe_left
+
+并且以下文件存在：
+
+output_results\backend_events\person_latest.json
+output_results\backend_events\action_latest.json
+
+
+六、交给板端同学之前的打包
+------------------------------------------------------------
+
+不要直接把整个 Windows 项目文件夹发送给板端同学。
+
+不要打包：
+
+- .venv
+- output_results 中的历史输出
+- processed_photos
+- processed_videos
+- failed_photos
+- failed_videos
+- 旧备份文件
+- 临时修改脚本
+
+建议使用：
+
+make_board_package.ps1
+
+在项目根目录执行：
+
+powershell -ExecutionPolicy Bypass -File .\make_board_package.ps1
+
+生成：
+
+dist\imx93_age_action_board.zip
+
+将这个 ZIP 发送给负责 i.MX93 板端调试的同学。
+
+
+七、i.MX93 板端调试顺序
+------------------------------------------------------------
+
+板端同学不要一开始就直接接入正式广告程序。
+
+建议按以下顺序调试：
+
+1. 检查系统和 Python 环境
+2. 测试图片年龄性别
+3. 测试本地视频动作识别
+4. 测试摄像头动作识别
+5. 与现有拍照程序联动
+6. 接入后端接口
+7. NPU 优化
+8. 配置开机自启动
+
+
+八、板端部署目录
+------------------------------------------------------------
+
+建议放到：
+
+/home/root/imx93_age_action
+
+进入目录：
+
+cd /home/root/imx93_age_action
+
+赋予脚本执行权限：
+
+chmod +x run_board.sh
+chmod +x collect_debug_info.sh
+
+
+九、板端环境检查
+------------------------------------------------------------
+
+先执行：
+
+./collect_debug_info.sh
+
+会生成：
+
+board_debug_日期时间.txt
+
+然后执行：
+
+python3 check_board.py
+
+重点检查：
+
+- Python 版本
+- CPU 架构
+- numpy
+- cv2
+- onnxruntime
+- LiteRT/TFLite Python 解释器
+- /dev/video0
+- 两个模型文件
+- libethosu_delegate.so
+
+
+十、板端文件模式测试
+------------------------------------------------------------
+
+1. 启动项目
+
+python3 app.py
+
+2. 测图片
+
+项目启动后，再复制一张新图片到：
+
+input_photos/
+
+查看结果：
+
+cat output_results/backend_events/person_latest.json
+
+3. 测视频
+
+项目保持运行，再复制一个新视频到：
+
+input_videos/
+
+查看结果：
+
+cat output_results/backend_events/action_latest.json
+
+
+十一、板端摄像头模式
+------------------------------------------------------------
+
+先确认摄像头设备：
+
+ls -l /dev/video*
+
+确认摄像头没有被其他程序占用：
+
+fuser /dev/video0
+
+启动：
+
+python3 app.py --camera /dev/video0 --no-display
+
+或：
+
+CAMERA=/dev/video0 ./run_board.sh
+
+此时：
+
+- 摄像头只负责动作识别
+- 年龄性别仍然从 input_photos 中的新图片读取
+
+
+十二、与原有摄像头程序的关系
+------------------------------------------------------------
+
+如果板子上原有广告程序已经打开 /dev/video0，本项目的动作程序再打开同一个摄像头，可能会失败。
+
+不要默认两个独立进程可以同时稳定打开同一个摄像头。
+
+推荐方案：
+
+1. 同一个摄像头主程序读取帧
+2. 一份帧用于人脸检测和拍照
+3. 同一份帧用于动作识别
+
+也可以使用：
+
+- GStreamer tee 分流
+- 共享内存
+- 本地视频流
+- 临时保存视频到 input_videos
+
+现有拍照程序应把新图片写入：
+
+input_photos/
+
+建议先写临时文件，写完后再原子改名，防止读取到不完整文件。
+
+
+十三、关于 NPU
+------------------------------------------------------------
+
+当前项目在 Windows 电脑上使用 CPU 运行。
+
+当前版本还不能说明：
+
+- 已经在 i.MX93 上验证完成
+- 已经启用 Ethos-U65 NPU
+- 已经完成 Vela 编译
+- 已经加载 libethosu_delegate.so
+
+板端建议先用 CPU 跑通业务流程。
+
+NPU 优化属于第二阶段：
+
+1. 确认 BSP 和驱动版本
+2. 确认 Vela 版本
+3. 使用 Vela 编译 MoveNet 模型
+4. 使用 benchmark_model 验证
+5. 修改 Python 代码加载 Ethos-U delegate
+6. 对比 CPU 和 NPU 性能
+
+Vela 版本必须与板端 BSP、Ethos-U 驱动匹配。
+
+
+十四、板端同学需要回传的信息
+------------------------------------------------------------
+
+如果运行失败，请回传：
+
+1. 板卡具体型号
+2. BSP 或系统镜像版本
+3. Python 版本
+4. 完整错误信息
+5. board_debug_*.txt
+6. ls -l /dev/video* 输出
+7. 是否存在 libethosu_delegate.so
+8. 原有摄像头程序如何获取画面
+9. 原有程序如何保存用户照片
+
+
+十五、当前项目状态
+------------------------------------------------------------
+
+已经完成：
+
+- Windows 图片年龄性别识别
+- Windows 视频左右滑识别
+- 视频高速完整扫描
+- 用户事件独立输出
+- 动作事件独立输出
+- session_id 用户关联
+- sequence 动作序号
+- 图片和视频自动归档
+
+尚未完成或尚未验证：
+
+- i.MX93 实机依赖安装
+- i.MX93 摄像头实际格式适配
+- 与原广告程序共享摄像头
+- 后端 HTTP/WebSocket 接口
+- Ethos-U65 NPU 加速
+- systemd 开机自启动
+
+当前版本应描述为：
+
+“电脑端功能完成，可交给 i.MX93 板端同学开始移植和调试。”
+
+不能描述为：
+
+“已经在 i.MX93 上完整验证并启用 NPU。”

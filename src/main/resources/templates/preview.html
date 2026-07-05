@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0d0d;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        .preview-toolbar {
+            width: 100%;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 30, 30, 0.95);
+            border-bottom: 1px solid #333;
+            z-index: 10;
+        }
+
+        .preview-toolbar .title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .preview-toolbar .title span {
+            color: #6c5ce7;
+        }
+
+        .preview-toolbar .info {
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+        .preview-toolbar .close-btn {
+            padding: 8px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .preview-toolbar .close-btn:hover {
+            background: #c0392b;
+        }
+
+        .preview-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            width: 100%;
+        }
+
+        .preview-stage {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .preview-stage .ad-preview-layer {
+            position: absolute;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .preview-stage .ad-preview-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-stage .ad-preview-layer.text-layer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #555;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        .layer-label {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: #7f8c8d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-stage:hover .layer-label {
+            opacity: 1;
+        }
+
+        .bottom-bar {
+            padding: 10px 24px;
+            color: #555;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .nav-zone {
+            position: fixed;
+            top: 0; bottom: 0;
+            width: 20%;
+            z-index: 5;
+            cursor: pointer;
+        }
+        .nav-zone.left  { left: 0; }
+        .nav-zone.right { right: 0; }
+        .nav-zone:hover { background: radial-gradient(circle at center, rgba(108,92,231,0.08), transparent 60%); }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.15);
+            font-size: 48px;
+            z-index: 6;
+            pointer-events: none;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .nav-arrow.prev { left: 32px; }
+        .nav-arrow.next { right: 32px; }
+        .nav-arrow.flash { color: rgba(108,92,231,0.9); }
+
+        .pager {
+            position: fixed;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            background: rgba(20,20,43,0.75);
+            border: 1px solid #2a2a4a;
+            border-radius: 20px;
+            color: #ccc;
+            font-size: 12px;
+            z-index: 6;
+        }
+        .pager .pager-dots {
+            display: flex; gap: 6px;
+        }
+        .pager .pager-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            transition: all 0.2s;
+        }
+        .pager .pager-dot.active {
+            background: #6c5ce7;
+            width: 18px;
+            border-radius: 3px;
+        }
+        .pager .pager-label {
+            color: #7f8c8d;
+            margin-left: 4px;
+        }
+
+        .fade-out { opacity: 0; transition: opacity 0.2s ease; }
+        .fade-in  { opacity: 1; transition: opacity 0.2s ease; }
+    </style>
+</head>
+<body>
+    <div class="preview-toolbar">
+        <div class="title">
+            <span>📢</span> 广告预览
+        </div>
+        <div class="info" id="sizeInfo">800 × 450</div>
+        <button class="close-btn" onclick="window.close()">关闭预览</button>
+    </div>
+
+    <div class="preview-container" id="previewContainer">
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <div class="nav-zone left"  id="navLeft"></div>
+    <div class="nav-zone right" id="navRight"></div>
+    <div class="nav-arrow prev" id="navPrevArrow">◀</div>
+    <div class="nav-arrow next" id="navNextArrow">▶</div>
+    <div class="pager" id="pagerBar" style="display:none;">
+        <div class="pager-dots" id="pagerDots"></div>
+        <span class="pager-label" id="pagerLabel"></span>
+    </div>
+
+    <div class="bottom-bar">
+        <span id="hintLabel">点击左右翻页 · 滚轮切换 · ESC 退出</span>
+    </div>
+
+    <script>
+    var slides = [];
+    var currentIndex = 0;
+
+    function getQuery(name) {
+        var params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+
+    (function init() {
+        var projectId = getQuery('projectId');
+        if (projectId) {
+            fetch('/api/ad/project/' + projectId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data || data.code !== 200 || !data.data) {
+                        showEmpty('项目不存在');
+                        return;
+                    }
+                    buildSlidesFromProject(data.data);
+                    if (slides.length === 0) { showEmpty('该项目没有页面'); return; }
+                    setupNav();
+                    renderSlide(0);
+                })
+                .catch(function() { showEmpty('加载失败'); });
+            return;
+        }
+
+        var configStr = sessionStorage.getItem('adPreviewConfig');
+        if (!configStr) {
+            showEmpty('暂无广告数据，请从编辑器或项目列表打开预览');
+            return;
+        }
+        try {
+            var config = JSON.parse(configStr);
+            slides = [{
+                projectId: config.projectId || null,
+                pageName: config.pageName || '预览',
+                canvasWidth: config.canvasWidth,
+                canvasHeight: config.canvasHeight,
+                backgroundColor: config.backgroundColor,
+                layers: config.layers || []
+            }];
+            setupNav();
+            renderSlide(0);
+        } catch (e) {
+            showEmpty('解析预览数据失败');
+        }
+    })();
+
+    function buildSlidesFromProject(project) {
+        var projectId = project.id;
+        var projectName = project.name || '';
+        var bg = project.backgroundColor;
+        if (project.pages && project.pages.length > 0) {
+            project.pages.forEach(function(page) {
+                slides.push({
+                    projectId: projectId,
+                    pageName: page.pageName || ('第' + ((page.sortOrder||0)+1) + '页'),
+                    canvasWidth: project.canvasWidth || 800,
+                    canvasHeight: project.canvasHeight || 450,
+                    backgroundColor: page.backgroundColor || bg || '#1a1a1a',
+                    layers: page.layers || []
+                });
+            });
+        }
+        if (slides.length === 0) {
+            slides.push({
+                projectId: projectId,
+                pageName: projectName || '预览',
+                canvasWidth: project.canvasWidth || 800,
+                canvasHeight: project.canvasHeight || 450,
+                backgroundColor: bg || '#1a1a1a',
+                layers: []
+            });
+        }
+    }
+
+    function showEmpty(msg) {
+        var c = document.getElementById('previewContainer');
+        c.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>' + (msg || '') + '</p></div>';
+    }
+
+    function getScale(cw, ch) {
+        var margin = 80;
+        var scaleX = (window.innerWidth - margin) / cw;
+        var scaleY = (window.innerHeight - margin - 100) / ch;
+        return Math.min(scaleX, scaleY, 1.5);
+    }
+
+    function renderSlide(index) {
+        if (slides.length === 0) return;
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        currentIndex = index;
+
+        var slide = slides[index];
+        var container = document.getElementById('previewContainer');
+        var stage;
+        var oldStage = container.querySelector('.preview-stage');
+        if (oldStage) oldStage.classList.add('fade-out');
+
+        setTimeout(function() {
+            container.innerHTML = '';
+            var cw = slide.canvasWidth || 800;
+            var ch = slide.canvasHeight || 450;
+            var scale = getScale(cw, ch);
+
+            stage = document.createElement('div');
+            stage.className = 'preview-stage fade-in';
+            stage.style.width = cw + 'px';
+            stage.style.height = ch + 'px';
+            stage.style.background = slide.backgroundColor || '#1a1a1a';
+            stage.style.transform = 'scale(' + scale + ')';
+
+            if (slide.layers) {
+                slide.layers.forEach(function(layer, i) {
+                    renderLayer(stage, layer, i);
+                });
+            }
+            container.appendChild(stage);
+            document.getElementById('sizeInfo').textContent = cw + ' × ' + ch + '  ·  ' + slide.pageName;
+            updatePager();
+        }, oldStage ? 180 : 0);
+    }
+
+    function renderLayer(stage, data, index) {
+        var layer = document.createElement('div');
+        layer.className = 'ad-preview-layer';
+        if (data.layerType === 'text') layer.classList.add('text-layer');
+
+        layer.style.left = (data.posX || 0) + 'px';
+        layer.style.top  = (data.posY  || 0) + 'px';
+        layer.style.width  = (data.width  || 200) + 'px';
+        layer.style.height = (data.height || 100) + 'px';
+        layer.style.zIndex = (data.zIndex != null ? data.zIndex : index);
+
+        if (data.layerType === 'text') {
+            layer.textContent = data.textContent || '';
+            if (data.fontSize)           layer.style.fontSize    = data.fontSize + 'px';
+            if (data.fontColor)          layer.style.color       = data.fontColor;
+            if (data.fontWeight)         layer.style.fontWeight  = data.fontWeight;
+            if (data.fontFamily)         layer.style.fontFamily  = data.fontFamily;
+            if (data.fontStyle)          layer.style.fontStyle   = data.fontStyle;
+            if (data.textDecoration)     layer.style.textDecoration = data.textDecoration;
+            if (data.lineHeight != null) layer.style.lineHeight  = data.lineHeight;
+            if (data.letterSpacing != null) layer.style.letterSpacing = data.letterSpacing + 'px';
+            if (data.opacity != null)    layer.style.opacity     = data.opacity;
+            if (data.textAlign)          layer.style.textAlign   = data.textAlign;
+        } else if (data.layerType === 'image' && data.imageUrl) {
+            var img = document.createElement('img');
+            img.src = data.imageUrl;
+            img.alt = data.layerName || '';
+            layer.appendChild(img);
+        }
+        if (data.borderRadius) layer.style.borderRadius = data.borderRadius + 'px';
+        applyEffects(layer, data);
+
+        var label = document.createElement('div');
+        label.className = 'layer-label';
+        label.textContent = (index + 1) + ' ' + (data.layerName || '图层');
+        layer.appendChild(label);
+
+        stage.appendChild(layer);
+    }
+
+    function applyEffects(layer, data) {
+        var effect = data.effect;
+        if (!effect) return;
+        var styles = [];
+        var filterParts = [];
+
+        if (effect.shadowEnabled) {
+            styles.push((effect.shadowX||0)+'px '+(effect.shadowY||0)+'px '+(effect.shadowBlur||10)+'px '+(effect.shadowColor||'rgba(0,0,0,0.5)'));
+        }
+        if (effect.glowEnabled) {
+            styles.push('0 0 '+(effect.glowSize||10)+'px '+(effect.glowColor||'rgba(108,92,231,0.8)'));
+        }
+        if (styles.length) layer.style.boxShadow = styles.join(', ');
+
+        if (effect.borderEnabled) {
+            layer.style.border = (effect.borderWidth||1)+'px '+(effect.borderColor||'#6c5ce7')+' '+(effect.borderStyle||'solid');
+        }
+        if (effect.brightness != null && effect.brightness !== 100) filterParts.push('brightness('+effect.brightness+'%)');
+        if (effect.contrast  != null && effect.contrast  !== 100) filterParts.push('contrast('+effect.contrast+'%)');
+        if (effect.saturation!= null && effect.saturation!== 100) filterParts.push('saturate('+effect.saturation+'%)');
+        if (effect.blur && effect.blur > 0)                      filterParts.push('blur('+effect.blur+'px)');
+        if (filterParts.length) layer.style.filter = filterParts.join(' ');
+
+        if (effect.perspectiveEnabled) {
+            layer.style.transform = 'perspective(500px) rotateX('+(effect.perspectiveY||0)+'deg) rotateY('+(effect.perspectiveX||0)+'deg)';
+        }
+    }
+
+    function updatePager() {
+        var bar = document.getElementById('pagerBar');
+        if (slides.length <= 1) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        var dotsWrap = document.getElementById('pagerDots');
+        dotsWrap.innerHTML = '';
+        for (var i = 0; i < slides.length; i++) {
+            var d = document.createElement('div');
+            d.className = 'pager-dot' + (i === currentIndex ? ' active' : '');
+            dotsWrap.appendChild(d);
+        }
+        document.getElementById('pagerLabel').textContent = (currentIndex + 1) + ' / ' + slides.length;
+    }
+
+    function flashArrow(dir) {
+        var el = dir === 'prev' ? document.getElementById('navPrevArrow') : document.getElementById('navNextArrow');
+        el.classList.add('flash');
+        clearTimeout(el._t);
+        el._t = setTimeout(function(){ el.classList.remove('flash'); }, 400);
+    }
+
+    function setupNav() {
+        document.getElementById('navLeft').addEventListener('click', function(){
+            flashArrow('prev');
+            renderSlide(currentIndex - 1);
+        });
+        document.getElementById('navRight').addEventListener('click', function(){
+            flashArrow('next');
+            renderSlide(currentIndex + 1);
+        });
+        document.addEventListener('wheel', function(e){
+            e.preventDefault();
+            if (e.deltaY > 0) { flashArrow('next'); renderSlide(currentIndex + 1); }
+            else              { flashArrow('prev'); renderSlide(currentIndex - 1); }
+        }, { passive: false });
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') window.close();
+            else if (e.key === 'ArrowRight') { flashArrow('next'); renderSlide(currentIndex + 1); }
+            else if (e.key === 'ArrowLeft')  { flashArrow('prev'); renderSlide(currentIndex - 1); }
+        });
+        window.addEventListener('resize', function(){
+            if (slides.length > 0) renderSlide(currentIndex);
+        });
+    }
+    </script>
+</body>
+</html>

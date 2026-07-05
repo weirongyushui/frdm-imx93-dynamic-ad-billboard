@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sia.advertisement.mapper.AdUserMapper">
+
+    <resultMap id="userMap" type="sia.advertisement.entity.AdUser">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="userMap">
+        SELECT id, username, password, nickname, created_at, updated_at
+        FROM ad_user
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="userMap">
+        SELECT id, username, password, nickname, created_at, updated_at
+        FROM ad_user
+        WHERE username = #{username}
+    </select>
+
+    <select id="selectAll" resultMap="userMap">
+        SELECT id, username, password, nickname, created_at, updated_at
+        FROM ad_user
+        ORDER BY id
+    </select>
+
+    <insert id="insert" parameterType="sia.advertisement.entity.AdUser"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ad_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            username, password, nickname
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            #{username}, #{password}, #{nickname}
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="sia.advertisement.entity.AdUser">
+        UPDATE ad_user
+        SET nickname = #{nickname}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ad_user WHERE id = #{id}
+    </delete>
+
+</mapper>
