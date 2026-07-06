@@ -61,12 +61,11 @@ ai.api.key=你的API_KEY
 ai.api.url=你的AI接口地址
 ai.api.model=deepseek-chat
 
-注意：不要把真实 API Key 上传到 GitHub。
 
 4. 启动 Spring Boot 后端
 
 在项目根目录执行：
-
+建议用IntelliJ IDEA部署好数据库和环境后一键启动
 mvn spring-boot:run
 
 看到类似：
@@ -111,9 +110,11 @@ received_faces/latest_face.jpg
 
 
 四、FRDM-IMX93 板端启动
+板子里是放电脑ip
+项目里是放板子ip
 
 1. 进入板端目录
-
+需要把imx93_age_action_board导入到root目录下
 cd /root/imx93_age_action_board
 
 2. 检查 Windows 电脑 IP

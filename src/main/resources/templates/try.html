@@ -2207,6 +2207,8 @@
                         };
                         img.src = ev.target.result;
                     };
+                    var targetLayer = uploadArea.closest('.ad-layer');
+
                     reader.readAsDataURL(file);
 
                     var formData = new FormData();
@@ -2221,8 +2223,7 @@
                         return res.json();
                     }).then(function(data) {
                         if (data.code === 200 && data.data && data.data.url) {
-                            var layer = uploadArea.closest('.ad-layer');
-                            var img = layer.querySelector('img');
+                            var img = targetLayer.querySelector('img');
                             if (img) img.src = data.data.url;
                             showToast('✅ 图片上传成功');
                         } else {
@@ -2281,7 +2282,7 @@
                 '<div class="layer-resize-handle top-right"></div>' +
                 '<div class="layer-resize-handle bottom-left"></div>' +
                 '<div class="layer-resize-handle bottom-right"></div>' +
-                '新文字内容';
+                '<span class="text-content">新文字内容</span>';
             canvasArea.appendChild(layer);
             bindLayerEvents(layer);
 
@@ -2736,7 +2737,7 @@
                 };
                 var img = layer.querySelector('img');
                 if (img && img.src) {
-                    layerData.imageUrl = img.src;
+                    layerData.imageUrl = sanitizeImageUrl(img.src);
                 }
                 config.layers.push(layerData);
             });
@@ -2759,6 +2760,12 @@
             }, 2200);
         }
 
+        function sanitizeImageUrl(url) {
+            if (!url || typeof url !== 'string') return null;
+            if (url.startsWith('data:image/')) return null;
+            return url;
+        }
+
         function getCurrentConfig() {
             var canvasArea = document.getElementById('canvasArea');
             var config = {
@@ -2779,6 +2786,7 @@
                     var span = layer.querySelector('.text-content');
                     textContent = span ? span.textContent : layer.textContent || '';
                     textContent = textContent.replace(/\s+/g, ' ').trim();
+                    console.log('[保存图层] 图层', i+1, '文字内容:', textContent);
                 }
                 var layerData = {
                     id: isNaN(parseInt(layerId)) ? null : parseInt(layerId),
@@ -2826,7 +2834,7 @@
                 }
                 var img = layer.querySelector('img');
                 if (img && img.src) {
-                    layerData.imageUrl = img.src;
+                    layerData.imageUrl = sanitizeImageUrl(img.src);
                 }
                 config.layers.push(layerData);
             });
@@ -2915,7 +2923,7 @@
                     textAlign: layer.style.textAlign || 'center',
                     borderRadius: parseInt(layer.style.borderRadius) || 0,
                     background: layer.style.background || '',
-                    imageUrl: (layer.querySelector('img') ? layer.querySelector('img').src : '') || null
+                    imageUrl: sanitizeImageUrl(layer.querySelector('img') ? layer.querySelector('img').src : '')
                 });
             });
             fetch('/api/ad/project/' + currentProjectId + '/page/' + currentPageId + '/layers', {
@@ -2924,8 +2932,40 @@
                 body: JSON.stringify(layerDTOs)
             })
             .then(function(res) {
-                if (res.ok) showToast('✅ 保存成功！');
-                else showToast('❌ 图层保存失败', true);
+                if (res.ok) {
+                    // 同步更新 pages 数组，确保 buildCanvasState 等能读取到最新数据
+                    var page = pages.find(function(p) { return p.pageId === currentPageId; });
+                    if (page) {
+                        page.layers = layerDTOs.map(function(dto, i) {
+                            return {
+                                id: dto.layerType === 'text' ? null : null,
+                                layerType: dto.layerType,
+                                layerName: dto.layerName,
+                                posX: dto.posX,
+                                posY: dto.posY,
+                                width: dto.width,
+                                height: dto.height,
+                                zIndex: dto.zIndex,
+                                sortOrder: dto.sortOrder,
+                                textContent: dto.textContent,
+                                fontSize: dto.fontSize,
+                                fontColor: dto.fontColor,
+                                fontWeight: dto.fontWeight,
+                                fontFamily: dto.fontFamily,
+                                fontStyle: dto.fontStyle,
+                                textDecoration: dto.textDecoration,
+                                lineHeight: dto.lineHeight,
+                                letterSpacing: dto.letterSpacing,
+                                opacity: dto.opacity,
+                                textAlign: dto.textAlign,
+                                borderRadius: dto.borderRadius,
+                                background: dto.background,
+                                imageUrl: dto.imageUrl
+                            };
+                        });
+                    }
+                    showToast('✅ 保存成功！');
+                } else showToast('❌ 图层保存失败', true);
             })
             .catch(function(err) {
                 showToast('❌ 网络错误，请重试', true);
@@ -3319,6 +3359,12 @@
                 var imgEl = layer.querySelector('img');
                 var textContent = layer.querySelector('.text-content');
 
+                var extractedText = '';
+                if (isText) {
+                    extractedText = textContent ? (textContent.textContent || '') : (layer.textContent || '');
+                }
+                console.log('[buildCanvasState] 图层:', layer.dataset.layerId, 'isText:', isText, '文字:', extractedText);
+
                 var layerInfo = {
                     id: layer.dataset.layerId,
                     type: isText ? 'text' : (imgEl ? 'image' : 'image'),
@@ -3331,8 +3377,8 @@
                     zIndex: parseInt(layer.style.zIndex) || 0
                 };
 
-                if (isText && textContent) {
-                    layerInfo.content = textContent.textContent || '';
+                if (isText) {
+                    layerInfo.content = textContent ? (textContent.textContent || '') : (layer.textContent || '');
                     layerInfo.fontSize = parseInt(layer.style.fontSize) || 16;
                     layerInfo.color = layer.style.color || '#ffffff';
                     layerInfo.fontWeight = layer.style.fontWeight || 'normal';
@@ -3341,18 +3387,60 @@
                 }
 
                 if (imgEl) {
-                    layerInfo.imageUrl = imgEl.src || '';
+                    layerInfo.imageUrl = sanitizeImageUrl(imgEl.src) || '';
                 }
 
                 layers.push(layerInfo);
             });
+
+            // 当前页面信息
+            var currentPageIdx = -1;
+            var currentPageName = '未知';
+            for (var i = 0; i < pages.length; i++) {
+                if (pages[i].pageId === currentPageId) {
+                    currentPageIdx = i;
+                    currentPageName = pages[i].pageName;
+                    break;
+                }
+            }
 
             return {
                 width: canvasW,
                 height: canvasH,
                 backgroundColor: bgColor,
                 layerCount: layers.length,
-                layers: layers
+                layers: layers,
+                page: {
+                    current: currentPageIdx + 1,
+                    currentName: currentPageName,
+                    total: pages.length,
+                    allPageNames: pages.map(function(p) { return p.pageName; }).join(', ')
+                },
+                allPages: pages.map(function(p) {
+                    var pageLayers = (p.layers || []).map(function(l) {
+                        var info = {
+                            type: l.layerType || 'unknown',
+                            posX: l.posX, posY: l.posY,
+                            width: l.width, height: l.height,
+                            zIndex: l.zIndex
+                        };
+                        if (l.layerType === 'text') {
+                            info.textContent = l.textContent || '';
+                            info.fontSize = l.fontSize;
+                            info.fontColor = l.fontColor;
+                            info.fontWeight = l.fontWeight;
+                        }
+                        if (l.layerType === 'image' && l.imageUrl) {
+                            info.imageUrl = l.imageUrl;
+                        }
+                        return info;
+                    });
+                    return {
+                        pageName: p.pageName || '未命名',
+                        layerCount: pageLayers.length,
+                        layers: pageLayers
+                    };
+                })
             };
         }
 
@@ -3371,6 +3459,7 @@
             showAiTyping();
 
             var canvasState = buildCanvasState();
+            console.log('[AI聊天] 发送给AI的完整画布状态:', JSON.stringify(canvasState, null, 2));
             var userMsgWithState = '[画布状态]\n' + JSON.stringify(canvasState, null, 2) + '\n\n[用户消息]\n' + text;
 
             var messagesWithContext = aiChatHistory.slice(0, -1);

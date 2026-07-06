@@ -46,11 +46,23 @@ public class AiService {
             systemMsg.put("content",
                 "你是一个广告设计助手，可以帮助用户设计广告文案、提供创意建议、优化广告内容。\n" +
                 "\n" +
+                "### 多页系统（重要）\n" +
+                "广告项目支持多个页面（类似PPT）。画布状态中的 page 字段告诉你当前在第几页：\n" +
+                "- page.current: 当前页码（从1开始）\n" +
+                "- page.currentName: 当前页面名称\n" +
+                "- page.total: 总页面数\n" +
+                "- page.allPageNames: 所有页面名称\n" +
+                "\n" +
+                "**当你需要在不同页添加内容时，你必须先用 next_page 或 prev_page 命令切换页面，然后在新页面执行添加操作。**\n" +
+                "例如：用户说'在第2页添加广告'，你需要先检查当前页码，如果不是第2页，就用 next_page/prev_page 翻到第2页，再添加图层。\n" +
+                "用户说'新建一页放广告'，先用 next_page 翻到最后一页（会自动新建），再添加图层。\n" +
+                "\n" +
                 "### 画布状态感知\n" +
                 "在用户的消息中，会包含 [画布状态] 标记的 JSON 数据，包含当前画布的所有信息：\n" +
                 "- width/height: 画布尺寸\n" +
                 "- backgroundColor: 背景色\n" +
                 "- layers: 图层数组，每个图层包含 id、type(text/image)、x、y、width、height、content、fontSize、color 等属性\n" +
+                "- page: 多页系统信息（current/total/currentName/allPageNames）\n" +
                 "\n" +
                 "你必须先分析画布状态，了解当前页面上已有的内容，然后再决定如何操作。例如：\n" +
                 "- 用户说'把标题变大'，你需要先找到标题图层的ID，然后用 update_layer 命令修改 fontSize\n" +
@@ -231,7 +243,7 @@ public class AiService {
         }
     }
 
-    public String analyzeAudience(String projectName, String textContents, String bgColor, List<String> imageUrls) {
+    public String analyzeAudience(String projectName, String textContents, String bgColor, List<String> imageUrls, String existingTags, String textSummary) {
         try {
             Map<String, Object> body = new LinkedHashMap<>();
             boolean hasImages = imageUrls != null && !imageUrls.isEmpty();
@@ -240,24 +252,30 @@ public class AiService {
             List<Map<String, Object>> contentList = new ArrayList<>();
 
             String systemPrompt = 
-                "你是一个专业广告受众与市场分析专家。请根据广告项目的完整信息（包括项目名称、所有图层的详细属性、文字内容、字体样式、颜色、位置布局、图片内容等），精准分析以下6个维度。\n" +
-                "严格只返回一个JSON对象，不要任何解释性文字，不要markdown代码块。字段说明：\n" +
-                "1. product: 该广告推销/宣传的商品或服务名称（如：智能手机、奶茶、英语培训、新能源汽车等）。若无法判断则填'未知商品'\n" +
+                "你是广告受众分析专家。product字段的判断规则如下（违反即错误）：\n\n" +
+                "【product字段判定铁律】\n" +
+                "★ 规则1：如果【广告文案摘要】里有任何文字，product必须等于其中的名词/品牌/产品词。\n" +
+                "   例如：文字写了'高清摄影机' → product='高清摄影机'；文字写了'iPhone 15' → product='iPhone 15'\n" +
+                "★ 规则2：只有文字完全没有提到任何商品/品牌/服务时，才能通过图片内容推断product\n" +
+                "★ 规则3：'未知商品'只在你知道商品是什么但无法识别时才用，如果文字明确写了商品名绝不填'未知商品'\n\n" +
+                "返回一个JSON对象，不要解释性文字、不要markdown、不要代码块。字段如下：\n" +
+                "1. product: 直接引用广告文字中出现的产品/品牌/服务名称，最多10个字\n" +
                 "2. category: 商品类别（数码家电/食品饮料/教育培训/美妆护肤/母婴用品/服装配饰/交通出行/医疗健康/金融理财/文化娱乐/房地产/其他）\n" +
-                "3. ageRange: 主要适合年龄范围（儿童0-12/青少年13-17/青年18-25/年轻白领25-35/中年35-50/中老年50+/全年龄段）\n" +
+                "3. ageRange: 适合年龄（儿童0-12/青少年13-17/青年18-25/年轻白领25-35/中年35-50/中老年50+/全年龄段）\n" +
                 "4. gender: 适合性别（男性为主/女性为主/男女皆宜）\n" +
-                "5. audience: 目标人群标签，2-3个词组描述（如：都市白领、大学生、新婚夫妇、健身达人、宝妈等）\n" +
-                "6. style: 广告视觉风格（科技简约/活泼可爱/高端奢华/温馨生活/商务稳重/运动活力/文艺清新/国潮古风等）\n" +
-                "字段全部用中文，保持简洁。示例：\n" +
-                "{\"product\":\"无糖奶茶\",\"category\":\"食品饮料\",\"ageRange\":\"青年18-25\",\"gender\":\"男女皆宜\",\"audience\":\"大学生,都市白领,健身人群\",\"style\":\"活泼可爱\"}\n\n";
+                "5. audience: 目标人群，2-3个词组\n" +
+                "6. style: 视觉风格（科技简约/活泼可爱/高端奢华/温馨生活/商务稳重/运动活力/文艺清新/国潮古风等）\n" +
+                "示例：{\"product\":\"高清摄影机\",\"category\":\"数码家电\",\"ageRange\":\"年轻白领25-35\",\"gender\":\"男女皆宜\",\"audience\":\"摄影爱好者,专业摄影师,视频创作者\",\"style\":\"科技简约\"}\n\n";
 
             Map<String, Object> textPart = new LinkedHashMap<>();
             textPart.put("type", "text");
             textPart.put("text",
                 systemPrompt +
-                "请分析以下广告的目标受众：\n" +
+                "请分析以下广告的目标受众：\n\n" +
+                (textSummary != null && !textSummary.isEmpty() ? textSummary + "\n" : "") +
                 "完整广告信息：\n" +
                 (textContents != null && !textContents.isEmpty() ? textContents : "无详细信息") + "\n" +
+                (existingTags != null && !existingTags.isEmpty() && !existingTags.contains("\"product\":\"\"") ? "已知标签参考（请在此基础上修正优化）：\n" + existingTags + "\n" : "") +
                 "请返回包含6个字段的JSON。");
             contentList.add(textPart);
 
@@ -290,6 +308,7 @@ public class AiService {
 
             String response = callApi(body);
             String content = extractContent(response);
+            System.out.println("[AI人群分析] 原始返回: " + content);
 
             // 尝试解析返回值，确保包含所有6个字段
             try {

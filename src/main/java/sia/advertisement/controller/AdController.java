@@ -402,6 +402,7 @@ public class AdController {
         List<AdPage> pages = adPageService.getByProjectId(id);
         StringBuilder allLayersInfo = new StringBuilder();
         List<String> imageUrls = new ArrayList<>();
+        List<String> allTextContents = new ArrayList<>();  // 提取所有文字内容
         
         allLayersInfo.append("【广告项目信息】\n");
         allLayersInfo.append("项目名称：").append(project.getName() != null ? project.getName() : "未命名").append("\n");
@@ -426,7 +427,8 @@ public class AdController {
                         allLayersInfo.append("透明度：").append(layer.getOpacity() != null ? layer.getOpacity() : 1.0).append("\n");
                         
                         if ("text".equals(layer.getLayerType())) {
-                            allLayersInfo.append("文字内容：").append(layer.getTextContent() != null ? layer.getTextContent() : "无").append("\n");
+                            String text = layer.getTextContent() != null ? layer.getTextContent() : "无";
+                            allLayersInfo.append("文字内容：").append(text).append("\n");
                             allLayersInfo.append("字体大小：").append(layer.getFontSize() != null ? layer.getFontSize() : 24).append("px\n");
                             allLayersInfo.append("字体颜色：").append(layer.getFontColor() != null ? layer.getFontColor() : "#ffffff").append("\n");
                             allLayersInfo.append("字重：").append(layer.getFontWeight() != null ? layer.getFontWeight() : "normal").append("\n");
@@ -436,6 +438,9 @@ public class AdController {
                             allLayersInfo.append("字间距：").append(layer.getLetterSpacing() != null ? layer.getLetterSpacing() : 0).append("px\n");
                             allLayersInfo.append("文字样式：").append(layer.getFontStyle() != null ? layer.getFontStyle() : "normal").append("\n");
                             allLayersInfo.append("文字装饰：").append(layer.getTextDecoration() != null ? layer.getTextDecoration() : "none").append("\n");
+                            if (!"无".equals(text) && !text.isEmpty()) {
+                                allTextContents.add(text);
+                            }
                         } else if ("image".equals(layer.getLayerType())) {
                             allLayersInfo.append("图片URL：").append(layer.getImageUrl() != null ? layer.getImageUrl() : "未上传").append("\n");
                             if (layer.getImageUrl() != null && !layer.getImageUrl().isEmpty()) {
@@ -451,11 +456,28 @@ public class AdController {
             }
         }
 
+        // 构建文字摘要（优先用于商品识别）
+        StringBuilder textSummary = new StringBuilder();
+        if (!allTextContents.isEmpty()) {
+            textSummary.append("【广告中出现的所有文字内容-请优先从中识别商品名称】\n");
+            for (int i = 0; i < allTextContents.size(); i++) {
+                textSummary.append("  - ").append(allTextContents.get(i)).append("\n");
+            }
+        }
+
+        // 调试日志
+        System.out.println("[人群分析] 项目=" + project.getName() + ", 文字图层数=" + allTextContents.size());
+        System.out.println("[人群分析] 文字内容=" + allTextContents);
+        System.out.println("[人群分析] 图片数=" + imageUrls.size());
+        System.out.println("[人群分析] textSummary=" + textSummary.toString());
+
         String result = aiService.analyzeAudience(
             project.getName(),
             allLayersInfo.toString(),
             project.getBackgroundColor(),
-            imageUrls
+            imageUrls,
+            project.getAiTags(),
+            textSummary.toString()
         );
 
         // 保存标签到数据库
